@@ -3,6 +3,12 @@ import Sidebar from "@/components/Sidebar/page";
 import Image from "next/image";
 import Link from "next/link";
 import { DEFAULT_KHATIB } from "@/lib/adminTypes";
+import {
+  MapPin, User, Settings, Building2, BookOpen,
+  GraduationCap, Droplets, Wifi, Car, Star,
+  Clock, Phone, Smartphone, Check, ChevronRight,
+  type LucideIcon,
+} from "lucide-react";
 
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
 const LAT = -7.3186;
@@ -222,37 +228,13 @@ const programs = [
   },
 ];
 
-const fasilitas = [
-  {
-    icon: "🕌",
-    title: "Ruang Shalat",
-    desc: "Kapasitas 500 jamaah, ber-AC, bersih & nyaman",
-  },
-  {
-    icon: "📚",
-    title: "Perpustakaan",
-    desc: "Koleksi 1.200+ buku & kitab Islam",
-  },
-  {
-    icon: "🎓",
-    title: "Kelas TPA",
-    desc: "Ruang kelas ber-AC untuk santri TPA",
-  },
-  {
-    icon: "💧",
-    title: "Tempat Wudhu",
-    desc: "Terpisah pria & wanita, selalu bersih",
-  },
-  {
-    icon: "📶",
-    title: "WiFi Gratis",
-    desc: "Internet cepat untuk jamaah selama di masjid",
-  },
-  {
-    icon: "🚗",
-    title: "Area Parkir",
-    desc: "Parkir luas, aman & gratis untuk jamaah",
-  },
+const fasilitas: { icon: LucideIcon; title: string; desc: string }[] = [
+  { icon: Building2,     title: "Ruang Shalat",  desc: "Kapasitas 500 jamaah, ber-AC, bersih & nyaman" },
+  { icon: BookOpen,      title: "Perpustakaan",  desc: "Koleksi 1.200+ buku & kitab Islam" },
+  { icon: GraduationCap, title: "Kelas TPA",     desc: "Ruang kelas ber-AC untuk santri TPA" },
+  { icon: Droplets,      title: "Tempat Wudhu",  desc: "Terpisah pria & wanita, selalu bersih" },
+  { icon: Wifi,          title: "WiFi Gratis",   desc: "Internet cepat untuk jamaah selama di masjid" },
+  { icon: Car,           title: "Area Parkir",   desc: "Parkir luas, aman & gratis untuk jamaah" },
 ];
 
 const pengurus = [
@@ -389,17 +371,7 @@ export default async function HomePages() {
             {/* Kiri */}
             <div className="md:w-64 shrink-0 p-5">
               <div className="flex items-start gap-1.5 mb-0.5">
-                <svg
-                  className="w-4 h-4 mt-0.5 text-gray-500 shrink-0"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <MapPin size={16} className="mt-0.5 text-gray-500 shrink-0" />
                 <span className="text-[13px] font-semibold text-gray-800 leading-snug">
                   Ketintang Baru XV No.20, Kec.Gayungan, Surabaya
                 </span>
@@ -409,13 +381,7 @@ export default async function HomePages() {
               </p>
               <div className="flex items-center gap-3 bg-[#EBF5ED] rounded-xl p-3">
                 <div className="w-10 h-10 rounded-full bg-amber-100 shrink-0 flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-amber-700"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-                  </svg>
+                  <User size={20} className="text-amber-700" />
                 </div>
                 <div>
                   <p className="text-[12px] font-bold text-gray-900 leading-snug">
@@ -448,11 +414,10 @@ export default async function HomePages() {
                         className={`py-2 pr-2 text-left rounded-l-xl ${row.isActive ? "bg-amber-50" : ""}`}
                       >
                         <div className="flex items-center gap-1.5">
-                          <span
-                            className={`text-amber-500 text-[10px] ${row.isActive ? "visible" : "invisible"}`}
-                          >
-                            ▶
-                          </span>
+                          <ChevronRight
+                            size={12}
+                            className={`text-amber-500 ${row.isActive ? "visible" : "invisible"}`}
+                          />
                           <span className="text-[12px] text-gray-600 whitespace-nowrap">
                             {row.date}
                           </span>
@@ -499,8 +464,8 @@ export default async function HomePages() {
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-lg">
-                  🕌
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <Building2 size={18} className="text-amber-600" />
                 </div>
                 <h3 className="font-bold text-[16px] text-gray-900">
                   Sejarah Singkat
@@ -520,8 +485,8 @@ export default async function HomePages() {
             </div>
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-lg">
-                  🌟
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <Star size={18} className="text-amber-600" />
                 </div>
                 <h3 className="font-bold text-[16px] text-gray-900">
                   Visi &amp; Misi
@@ -548,7 +513,7 @@ export default async function HomePages() {
                     key={m}
                     className="flex items-start gap-2 text-[13px] text-gray-600"
                   >
-                    <span className="text-amber-500 mt-0.5 shrink-0">✓</span>
+                    <Check size={14} className="text-amber-500 mt-0.5 shrink-0" />
                     {m}
                   </li>
                 ))}
@@ -563,13 +528,7 @@ export default async function HomePages() {
                 className="bg-white rounded-2xl p-5 shadow-sm text-center"
               >
                 <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
-                  <svg
-                    className="w-7 h-7 text-amber-700"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
-                  </svg>
+                  <User size={28} className="text-amber-700" />
                 </div>
                 <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider mb-1">
                   {p.jabatan}
@@ -702,7 +661,7 @@ export default async function HomePages() {
                 key={f.title}
                 className="bg-gray-50 rounded-2xl p-5 hover:shadow-sm transition-shadow border border-gray-100"
               >
-                <div className="text-3xl mb-3">{f.icon}</div>
+                <div className="mb-3"><f.icon size={28} className="text-amber-600" /></div>
                 <h4 className="font-bold text-[14px] text-gray-900 mb-1">
                   {f.title}
                 </h4>
@@ -818,70 +777,40 @@ export default async function HomePages() {
 
             {/* Kontak */}
             <div className="space-y-3">
-              {[
-                {
-                  icon: "📍",
-                  label: "Alamat",
-                  value:
-                    "Jl. Ketintang Baru XV No.20\nKec. Gayungan, Surabaya 60231\nJawa Timur, Indonesia",
-                },
-                {
-                  icon: "🕐",
-                  label: "Jam Operasional",
-                  value:
-                    "Senin – Minggu: 04:00 – 21:00 WIB\nShalat 5 waktu berjamaah setiap hari",
-                },
-                {
-                  icon: "📞",
-                  label: "Kontak",
-                  value:
-                    "WhatsApp: 0812-3456-7890\nEmail: info@masjidalhidayah.id",
-                },
-                {
-                  icon: "📱",
-                  label: "Media Sosial",
-                  value:
-                    "Instagram: @masjidalhidayah.id\nYouTube: Masjid Al-Hidayah Surabaya",
-                },
-              ].map((c) => (
-                <div
-                  key={c.label}
-                  className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex gap-4 items-start"
-                >
-                  <span className="text-2xl shrink-0">{c.icon}</span>
-                  <div>
-                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
-                      {c.label}
-                    </p>
-                    <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
-                      {c.value}
-                    </p>
+              {(
+                [
+                  { icon: MapPin,     label: "Alamat",          value: "Jl. Ketintang Baru XV No.20\nKec. Gayungan, Surabaya 60231\nJawa Timur, Indonesia" },
+                  { icon: Clock,      label: "Jam Operasional", value: "Senin – Minggu: 04:00 – 21:00 WIB\nShalat 5 waktu berjamaah setiap hari" },
+                  { icon: Phone,      label: "Kontak",          value: "WhatsApp: 0812-3456-7890\nEmail: info@masjidalhidayah.id" },
+                  { icon: Smartphone, label: "Media Sosial",    value: "Instagram: @masjidalhidayah.id\nYouTube: Masjid Al-Hidayah Surabaya" },
+                ] as { icon: LucideIcon; label: string; value: string }[]
+              ).map((c) => {
+                const KontakIcon = c.icon;
+                return (
+                  <div
+                    key={c.label}
+                    className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex gap-4 items-start"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <KontakIcon size={16} className="text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                        {c.label}
+                      </p>
+                      <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
+                        {c.value}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               <Link
                 href="/admin"
                 className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border-2 border-dashed border-gray-200 text-[13px] text-gray-400 hover:border-amber-300 hover:text-amber-600 transition-colors"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
+                <Settings size={16} />
                 Panel Admin Masjid
               </Link>
             </div>

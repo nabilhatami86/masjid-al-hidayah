@@ -28,12 +28,14 @@ export default function Sidebar() {
       <div className="max-w-5xl mx-auto px-6 h-[65px] flex items-center justify-between">
         {/* Logo → Beranda */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <Image
-            src="/logo.png"
-            width={32}
-            height={32}
-            alt="Masjid Al-Hidayah Logo"
-          />
+          <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 shadow-sm">
+            <Image
+              src="/logo.png"
+              width={22}
+              height={22}
+              alt="Masjid Al-Hidayah Logo"
+            />
+          </div>
           <div>
             <p className="font-bold text-[14px] leading-tight text-gray-900">
               Masjid
