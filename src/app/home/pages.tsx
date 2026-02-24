@@ -367,6 +367,11 @@ export default async function HomePages() {
       {/* ══ JADWAL SHOLAT ══ */}
       <div className="relative z-10 -mt-24 px-4 mb-10">
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Header strip */}
+          <div className="bg-amber-500 px-5 py-2.5 flex items-center gap-2">
+            <Clock size={15} className="text-white" />
+            <h2 className="text-white font-bold text-[13px] uppercase tracking-widest">Jadwal Sholat</h2>
+          </div>
           <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
             {/* Kiri */}
             <div className="md:w-64 shrink-0 p-5">
