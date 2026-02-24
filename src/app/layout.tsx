@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Masjid Ibnu Sina",
-  description: "Website resmi Masjid Ibnu Sina - Pondok Gede, Bekasi, Jawa Barat",
+  title: "Masjid Al-Hidayah",
+  description:
+    "Website resmi Masjid Al-Hidayah - Ketintang Baru XV, Kec. Gayungan, Surabaya",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({

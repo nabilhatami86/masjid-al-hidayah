@@ -2,11 +2,26 @@ import Footer from "@/components/Footer/page";
 import Sidebar from "@/components/Sidebar/page";
 import Image from "next/image";
 import Link from "next/link";
-import { DEFAULT_KHATIB } from "@/lib/adminTypes";
+import { DEFAULT_KHATIB, type Khatib } from "@/lib/adminTypes";
+import { getJadwalMendatang } from "@/lib/controllers/jadwalController";
+import { getKhatibById } from "@/lib/controllers/khatibController";
+import { getAllProgramImages } from "@/lib/controllers/programController";
 import {
-  MapPin, User, Settings, Building2, BookOpen,
-  GraduationCap, Droplets, Wifi, Car, Star,
-  Clock, Phone, Smartphone, Check, ChevronRight,
+  MapPin,
+  User,
+  Settings,
+  Building2,
+  BookOpen,
+  GraduationCap,
+  Droplets,
+  Wifi,
+  Car,
+  Star,
+  Clock,
+  Phone,
+  Smartphone,
+  Check,
+  ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 
@@ -205,36 +220,44 @@ const BADGE_MAP: Record<string, string> = {
   emerald: "bg-emerald-100 text-emerald-700",
 };
 
-const programs = [
-  {
-    title: "TPA Al-Hidayah",
-    desc: "Pendidikan Al-Qur'an untuk anak usia 5–15 tahun dengan metode terbaik.",
-    objectPos: "object-top",
-  },
-  {
-    title: "Kajian Sabtu",
-    desc: "Kajian rutin setiap Sabtu pagi dengan ustadz pilihan & topik aktual.",
-    objectPos: "object-center",
-  },
-  {
-    title: "Wakaf Produktif",
-    desc: "Program wakaf untuk kemandirian ekonomi umat & pembangunan masjid.",
-    objectPos: "object-bottom",
-  },
-  {
-    title: "Tahsin Al-Qur'an",
-    desc: "Perbaikan bacaan Al-Qur'an sesuai kaidah tajwid untuk semua usia.",
-    objectPos: "object-right",
-  },
+const PROGRAMS_STATIC = [
+  { key: "tpa-al-hidayah",  title: "TPA Al-Hidayah",   desc: "Pendidikan Al-Qur'an untuk anak usia 5–15 tahun dengan metode terbaik.", objectPos: "object-top"    },
+  { key: "kajian-sabtu",    title: "Kajian Sabtu",     desc: "Kajian rutin setiap Sabtu pagi dengan ustadz pilihan & topik aktual.",   objectPos: "object-center" },
+  { key: "wakaf-produktif", title: "Wakaf Produktif",  desc: "Program wakaf untuk kemandirian ekonomi umat & pembangunan masjid.",     objectPos: "object-bottom" },
+  { key: "tahsin-alquran",  title: "Tahsin Al-Qur'an", desc: "Perbaikan bacaan Al-Qur'an sesuai kaidah tajwid untuk semua usia.",      objectPos: "object-right"  },
 ];
 
 const fasilitas: { icon: LucideIcon; title: string; desc: string }[] = [
-  { icon: Building2,     title: "Ruang Shalat",  desc: "Kapasitas 500 jamaah, ber-AC, bersih & nyaman" },
-  { icon: BookOpen,      title: "Perpustakaan",  desc: "Koleksi 1.200+ buku & kitab Islam" },
-  { icon: GraduationCap, title: "Kelas TPA",     desc: "Ruang kelas ber-AC untuk santri TPA" },
-  { icon: Droplets,      title: "Tempat Wudhu",  desc: "Terpisah pria & wanita, selalu bersih" },
-  { icon: Wifi,          title: "WiFi Gratis",   desc: "Internet cepat untuk jamaah selama di masjid" },
-  { icon: Car,           title: "Area Parkir",   desc: "Parkir luas, aman & gratis untuk jamaah" },
+  {
+    icon: Building2,
+    title: "Ruang Shalat",
+    desc: "Kapasitas 500 jamaah, ber-AC, bersih & nyaman",
+  },
+  {
+    icon: BookOpen,
+    title: "Perpustakaan",
+    desc: "Koleksi 1.200+ buku & kitab Islam",
+  },
+  {
+    icon: GraduationCap,
+    title: "Kelas TPA",
+    desc: "Ruang kelas ber-AC untuk santri TPA",
+  },
+  {
+    icon: Droplets,
+    title: "Tempat Wudhu",
+    desc: "Terpisah pria & wanita, selalu bersih",
+  },
+  {
+    icon: Wifi,
+    title: "WiFi Gratis",
+    desc: "Internet cepat untuk jamaah selama di masjid",
+  },
+  {
+    icon: Car,
+    title: "Area Parkir",
+    desc: "Parkir luas, aman & gratis untuk jamaah",
+  },
 ];
 
 const pengurus = [
@@ -288,7 +311,8 @@ export default async function HomePages() {
   const wibTomorrow = new Date(wibNow);
   wibTomorrow.setDate(wibTomorrow.getDate() + 1);
 
-  const khutbahLabel = `Khutbah Jumat, ${toDisplayDate(getNextFriday(wibNow))}`;
+  const nextFriday = getNextFriday(wibNow);
+  const khutbahLabel = `Khutbah Jumat, ${toDisplayDate(nextFriday)}`;
   const upcomingEvents = getUpcomingEvents(wibNow);
 
   const [todayT, tomorrowT] = await Promise.all([
@@ -320,6 +344,46 @@ export default async function HomePages() {
       activeCol: null,
     },
   ];
+
+  // ─── KHATIB JUMAT ──────────────────────────────────────────────────────────
+  const nextFridayISO = `${nextFriday.getFullYear()}-${String(nextFriday.getMonth() + 1).padStart(2, "0")}-${String(nextFriday.getDate()).padStart(2, "0")}`;
+  let fridayKhatib: Khatib | null = null;
+  try {
+    const jadwals = await getJadwalMendatang(10);
+    const fridayJadwal =
+      jadwals.find(
+        (j) =>
+          j.jenisKegiatan === "Khutbah Jumat" && j.tanggal === nextFridayISO,
+      ) ??
+      jadwals.find((j) => j.jenisKegiatan === "Khutbah Jumat") ??
+      null;
+    if (fridayJadwal?.khatibId) {
+      fridayKhatib = await getKhatibById(fridayJadwal.khatibId);
+    }
+  } catch {
+    /* fall through to default */
+  }
+  if (!fridayKhatib) {
+    const active = DEFAULT_KHATIB.filter((k) => k.aktif);
+    if (active.length > 0) {
+      fridayKhatib =
+        active[Math.floor(nextFriday.getDate() / 7) % active.length];
+    }
+  }
+
+  // ─── PROGRAM IMAGES ────────────────────────────────────────────────────────
+  const programImageMap: Record<string, string> = {};
+  try {
+    const imgs = await getAllProgramImages();
+    for (const img of imgs) {
+      if (img.imageUrl) programImageMap[img.key] = img.imageUrl;
+    }
+  } catch { /* fall through — use default image */ }
+
+  const programs = PROGRAMS_STATIC.map((p) => ({
+    ...p,
+    image: programImageMap[p.key] ?? "/background.png",
+  }));
 
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
@@ -368,62 +432,96 @@ export default async function HomePages() {
       <div className="relative z-10 -mt-24 px-4 mb-10">
         <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Header strip */}
-          <div className="bg-amber-500 px-5 py-2.5 flex items-center gap-2">
-            <Clock size={15} className="text-white" />
-            <h2 className="text-white font-bold text-[13px] uppercase tracking-widest">Jadwal Sholat</h2>
+          <div className="bg-amber-500 px-5 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock size={15} className="text-white" />
+              <h2 className="text-white font-bold text-[13px] uppercase tracking-widest">
+                Jadwal Sholat
+              </h2>
+            </div>
+            <span className="text-amber-100 text-[11px] font-medium">
+              Hari Ini &amp; Besok
+            </span>
           </div>
           <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
             {/* Kiri */}
-            <div className="md:w-64 shrink-0 p-5">
+            <div className="md:w-68 shrink-0 p-5">
               <div className="flex items-start gap-1.5 mb-0.5">
-                <MapPin size={16} className="mt-0.5 text-gray-500 shrink-0" />
-                <span className="text-[13px] font-semibold text-gray-800 leading-snug">
+                <MapPin size={15} className="mt-0.5 text-gray-400 shrink-0" />
+                <span className="text-[12px] font-medium text-gray-600 leading-snug">
                   Ketintang Baru XV No.20, Kec.Gayungan, Surabaya
                 </span>
               </div>
-              <p className="text-[12px] text-gray-500 mb-4 pl-[22px]">
+              <p className="text-[11px] text-amber-600 font-semibold mb-4 pl-5.5">
                 {khutbahLabel}
               </p>
-              <div className="flex items-center gap-3 bg-[#EBF5ED] rounded-xl p-3">
-                <div className="w-10 h-10 rounded-full bg-amber-100 shrink-0 flex items-center justify-center">
-                  <User size={20} className="text-amber-700" />
-                </div>
-                <div>
-                  <p className="text-[12px] font-bold text-gray-900 leading-snug">
-                    Dr. Adi Hidayat, Lc., M.A.
-                  </p>
-                  <p className="text-[11px] text-gray-500">Khatib Jumat</p>
+
+              {/* Khatib card */}
+              <div className="bg-linear-to-br from-amber-50 to-orange-50 rounded-xl p-3.5 border border-amber-200">
+                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2.5">
+                  Khatib Jumat
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden bg-amber-50 ring-2 ring-amber-200 shrink-0">
+                    {fridayKhatib?.fotoUrl ? (
+                      <Image
+                        src={fridayKhatib.fotoUrl}
+                        alt={fridayKhatib.nama}
+                        fill
+                        className="object-cover object-top"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-amber-100">
+                        <User size={22} className="text-amber-700" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[12.5px] font-bold text-gray-900 leading-snug">
+                      {fridayKhatib
+                        ? `${fridayKhatib.nama}${fridayKhatib.gelar ? `, ${fridayKhatib.gelar}` : ""}`
+                        : "Belum Ditentukan"}
+                    </p>
+                    {fridayKhatib?.spesialisasi && (
+                      <p className="text-[11px] text-amber-600 mt-0.5 font-medium truncate">
+                        {fridayKhatib.spesialisasi}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
+
             {/* Kanan: tabel */}
             <div className="flex-1 p-5 overflow-x-auto">
-              <table className="w-full min-w-[380px] text-center text-sm">
+              <table className="w-full min-w-95 text-center text-sm">
                 <thead>
                   <tr>
-                    <th className="text-left pb-2 pr-2 text-[11px] font-semibold text-gray-400 min-w-[130px]" />
+                    <th className="text-left pb-3 pr-2 text-[11px] font-semibold text-gray-400 min-w-32.5" />
                     {prayerColumns.map(({ label }) => (
                       <th
                         key={label}
-                        className="pb-2 text-[11px] font-semibold text-gray-400 w-14"
+                        className="pb-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-14"
                       >
                         {label}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="space-y-1">
                   {prayerData.map((row, i) => (
                     <tr key={i}>
                       <td
-                        className={`py-2 pr-2 text-left rounded-l-xl ${row.isActive ? "bg-amber-50" : ""}`}
+                        className={`py-2.5 pr-2 text-left rounded-l-xl ${row.isActive ? "bg-amber-50" : ""}`}
                       >
                         <div className="flex items-center gap-1.5">
                           <ChevronRight
                             size={12}
                             className={`text-amber-500 ${row.isActive ? "visible" : "invisible"}`}
                           />
-                          <span className="text-[12px] text-gray-600 whitespace-nowrap">
+                          <span
+                            className={`text-[12px] whitespace-nowrap ${row.isActive ? "font-semibold text-gray-800" : "text-gray-500"}`}
+                          >
                             {row.date}
                           </span>
                         </div>
@@ -432,14 +530,14 @@ export default async function HomePages() {
                         <td
                           key={key}
                           className={[
-                            "py-2 w-14",
+                            "py-2.5 w-14 text-[12px]",
                             row.isActive ? "bg-amber-50" : "",
                             j === prayerColumns.length - 1
                               ? "rounded-r-xl"
                               : "",
                             row.isActive && key === row.activeCol
                               ? "font-bold text-amber-600"
-                              : "font-medium text-gray-700",
+                              : "font-medium text-gray-600",
                           ].join(" ")}
                         >
                           {row[key]}
@@ -518,7 +616,10 @@ export default async function HomePages() {
                     key={m}
                     className="flex items-start gap-2 text-[13px] text-gray-600"
                   >
-                    <Check size={14} className="text-amber-500 mt-0.5 shrink-0" />
+                    <Check
+                      size={14}
+                      className="text-amber-500 mt-0.5 shrink-0"
+                    />
                     {m}
                   </li>
                 ))}
@@ -628,7 +729,7 @@ export default async function HomePages() {
                 className="relative h-56 rounded-2xl overflow-hidden cursor-pointer group"
               >
                 <Image
-                  src="/background.png"
+                  src={program.image}
                   alt={program.title}
                   fill
                   className={`object-cover ${program.objectPos} group-hover:scale-105 transition-transform duration-500`}
@@ -666,7 +767,9 @@ export default async function HomePages() {
                 key={f.title}
                 className="bg-gray-50 rounded-2xl p-5 hover:shadow-sm transition-shadow border border-gray-100"
               >
-                <div className="mb-3"><f.icon size={28} className="text-amber-600" /></div>
+                <div className="mb-3">
+                  <f.icon size={28} className="text-amber-600" />
+                </div>
                 <h4 className="font-bold text-[14px] text-gray-900 mb-1">
                   {f.title}
                 </h4>
@@ -784,10 +887,30 @@ export default async function HomePages() {
             <div className="space-y-3">
               {(
                 [
-                  { icon: MapPin,     label: "Alamat",          value: "Jl. Ketintang Baru XV No.20\nKec. Gayungan, Surabaya 60231\nJawa Timur, Indonesia" },
-                  { icon: Clock,      label: "Jam Operasional", value: "Senin – Minggu: 04:00 – 21:00 WIB\nShalat 5 waktu berjamaah setiap hari" },
-                  { icon: Phone,      label: "Kontak",          value: "WhatsApp: 0812-3456-7890\nEmail: info@masjidalhidayah.id" },
-                  { icon: Smartphone, label: "Media Sosial",    value: "Instagram: @masjidalhidayah.id\nYouTube: Masjid Al-Hidayah Surabaya" },
+                  {
+                    icon: MapPin,
+                    label: "Alamat",
+                    value:
+                      "Jl. Ketintang Baru XV No.20\nKec. Gayungan, Surabaya 60231\nJawa Timur, Indonesia",
+                  },
+                  {
+                    icon: Clock,
+                    label: "Jam Operasional",
+                    value:
+                      "Senin – Minggu: 04:00 – 21:00 WIB\nShalat 5 waktu berjamaah setiap hari",
+                  },
+                  {
+                    icon: Phone,
+                    label: "Kontak",
+                    value:
+                      "WhatsApp: 0812-3456-7890\nEmail: info@masjidalhidayah.id",
+                  },
+                  {
+                    icon: Smartphone,
+                    label: "Media Sosial",
+                    value:
+                      "Instagram: @masjidalhidayah.id\nYouTube: Masjid Al-Hidayah Surabaya",
+                  },
                 ] as { icon: LucideIcon; label: string; value: string }[]
               ).map((c) => {
                 const KontakIcon = c.icon;

@@ -4,13 +4,24 @@ import { useEffect, useState, useMemo } from "react";
 import AdminGuard from "@/components/AdminGuard";
 import AdminSidebar from "@/components/AdminSidebar";
 import { KATEGORI_MASUK, KATEGORI_KELUAR, type TransaksiAdmin } from "@/lib/adminTypes";
-import { Plus, Search, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, PieChart, Pie, Cell,
+} from "recharts";
 
 const MONTHS_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 const PER_PAGE  = 12;
+const PIE_COLORS = ["#f59e0b","#10b981","#3b82f6","#8b5cf6","#f43f5e","#06b6d4","#84cc16","#fb923c"];
 
 function rupiah(n: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
+}
+
+function formatAxis(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "jt";
+  if (n >= 1_000) return Math.round(n / 1_000) + "rb";
+  return String(n);
 }
 
 const EMPTY_FORM: Omit<TransaksiAdmin, "id"> = {
@@ -122,6 +133,34 @@ export default function KeuanganAdminPage() {
     return { masuk, keluar, saldo: masuk - keluar };
   }, [list]);
 
+  const monthlyData = useMemo(() => {
+    const months = MONTHS_ID.map((label) => ({ bulan: label.slice(0, 3), Pemasukan: 0, Pengeluaran: 0 }));
+    for (const t of list) {
+      const m = parseInt(t.tanggal.split("-")[1]) - 1;
+      if (m >= 0 && m < 12) {
+        if (t.jenis === "masuk") months[m].Pemasukan += t.jumlah;
+        else months[m].Pengeluaran += t.jumlah;
+      }
+    }
+    return months;
+  }, [list]);
+
+  const kategoriMasukData = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const t of list.filter((t) => t.jenis === "masuk")) {
+      map[t.kategori] = (map[t.kategori] ?? 0) + t.jumlah;
+    }
+    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }, [list]);
+
+  const kategoriKeluarData = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const t of list.filter((t) => t.jenis === "keluar")) {
+      map[t.kategori] = (map[t.kategori] ?? 0) + t.jumlah;
+    }
+    return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  }, [list]);
+
   const kategoriOpts = form.jenis === "masuk" ? KATEGORI_MASUK : KATEGORI_KELUAR;
 
   return (
@@ -150,21 +189,148 @@ export default function KeuanganAdminPage() {
 
             {/* Summary Cards */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-white rounded-2xl shadow-sm p-4 border-l-4 border-emerald-400">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Total Pemasukan</p>
-                <p className="text-lg font-bold text-emerald-600 mt-1 break-all">{loading ? "…" : rupiah(totalSummary.masuk)}</p>
+              <div className="bg-white rounded-2xl shadow-sm p-4 overflow-hidden relative">
+                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-400 rounded-l-2xl" />
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-2">Pemasukan</p>
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                    <TrendingUp size={14} className="text-emerald-500" />
+                  </div>
+                </div>
+                <p className="text-[15px] font-bold text-emerald-600 pl-2 truncate">{loading ? "…" : rupiah(totalSummary.masuk)}</p>
               </div>
-              <div className="bg-white rounded-2xl shadow-sm p-4 border-l-4 border-red-400">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Total Pengeluaran</p>
-                <p className="text-lg font-bold text-red-500 mt-1 break-all">{loading ? "…" : rupiah(totalSummary.keluar)}</p>
+              <div className="bg-white rounded-2xl shadow-sm p-4 overflow-hidden relative">
+                <div className="absolute top-0 left-0 w-1 h-full bg-red-400 rounded-l-2xl" />
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-2">Pengeluaran</p>
+                  <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center">
+                    <TrendingDown size={14} className="text-red-500" />
+                  </div>
+                </div>
+                <p className="text-[15px] font-bold text-red-500 pl-2 truncate">{loading ? "…" : rupiah(totalSummary.keluar)}</p>
               </div>
-              <div className="bg-white rounded-2xl shadow-sm p-4 border-l-4 border-amber-400">
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Saldo Kas</p>
-                <p className={`text-lg font-bold mt-1 break-all ${totalSummary.saldo >= 0 ? "text-amber-600" : "text-red-600"}`}>
+              <div className="bg-white rounded-2xl shadow-sm p-4 overflow-hidden relative">
+                <div className={`absolute top-0 left-0 w-1 h-full rounded-l-2xl ${totalSummary.saldo >= 0 ? "bg-amber-400" : "bg-red-400"}`} />
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-2">Saldo Kas</p>
+                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${totalSummary.saldo >= 0 ? "bg-amber-50" : "bg-red-50"}`}>
+                    <span className={`text-[13px] font-black ${totalSummary.saldo >= 0 ? "text-amber-500" : "text-red-500"}`}>
+                      {totalSummary.saldo >= 0 ? "+" : "−"}
+                    </span>
+                  </div>
+                </div>
+                <p className={`text-[15px] font-bold pl-2 truncate ${totalSummary.saldo >= 0 ? "text-amber-600" : "text-red-600"}`}>
                   {loading ? "…" : rupiah(totalSummary.saldo)}
                 </p>
               </div>
             </div>
+
+            {/* ── CHARTS ── */}
+            {!loading && list.length > 0 && (
+              <div className="space-y-4">
+                {/* Bar chart - monthly */}
+                <div className="bg-white rounded-2xl shadow-sm p-5">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <h3 className="text-[14px] font-bold text-gray-800">Pemasukan & Pengeluaran</h3>
+                      <p className="text-[11px] text-gray-400 mt-0.5">Per bulan sepanjang tahun</p>
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px]">
+                      <span className="flex items-center gap-1.5 text-gray-500">
+                        <span className="w-3 h-3 rounded-sm bg-emerald-400 inline-block" />Pemasukan
+                      </span>
+                      <span className="flex items-center gap-1.5 text-gray-500">
+                        <span className="w-3 h-3 rounded-sm bg-red-400 inline-block" />Pengeluaran
+                      </span>
+                    </div>
+                  </div>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <BarChart data={monthlyData} barGap={3} barSize={14} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
+                      <XAxis dataKey="bulan" tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
+                      <YAxis tickFormatter={formatAxis} tick={{ fontSize: 10, fill: "#9ca3af" }} axisLine={false} tickLine={false} width={44} />
+                      <Tooltip
+                        formatter={(value: number, name: string) => [rupiah(value), name]}
+                        contentStyle={{ borderRadius: "12px", border: "1px solid #f3f4f6", fontSize: "12px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
+                        cursor={{ fill: "#f9fafb", radius: 4 }}
+                      />
+                      <Legend hide />
+                      <Bar dataKey="Pemasukan" fill="#34d399" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Pengeluaran" fill="#f87171" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Two donut charts */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {/* Masuk categories */}
+                  <div className="bg-white rounded-2xl shadow-sm p-5">
+                    <h3 className="text-[14px] font-bold text-gray-800 mb-0.5">Kategori Pemasukan</h3>
+                    <p className="text-[11px] text-gray-400 mb-4">Distribusi sumber dana masuk</p>
+                    {kategoriMasukData.length === 0 ? (
+                      <p className="text-center text-[12px] text-gray-400 py-10">Belum ada data</p>
+                    ) : (
+                      <>
+                        <ResponsiveContainer width="100%" height={170}>
+                          <PieChart>
+                            <Pie data={kategoriMasukData} cx="50%" cy="50%" innerRadius={48} outerRadius={76} paddingAngle={3} dataKey="value" strokeWidth={0}>
+                              {kategoriMasukData.map((_, i) => (
+                                <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              formatter={(value: number) => [rupiah(value), "Jumlah"]}
+                              contentStyle={{ borderRadius: "12px", border: "1px solid #f3f4f6", fontSize: "12px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-3">
+                          {kategoriMasukData.map((d, i) => (
+                            <span key={d.name} className="flex items-center gap-1.5 text-[11px] text-gray-500">
+                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                              {d.name}
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Keluar categories */}
+                  <div className="bg-white rounded-2xl shadow-sm p-5">
+                    <h3 className="text-[14px] font-bold text-gray-800 mb-0.5">Kategori Pengeluaran</h3>
+                    <p className="text-[11px] text-gray-400 mb-4">Distribusi penggunaan dana</p>
+                    {kategoriKeluarData.length === 0 ? (
+                      <p className="text-center text-[12px] text-gray-400 py-10">Belum ada data</p>
+                    ) : (
+                      <>
+                        <ResponsiveContainer width="100%" height={170}>
+                          <PieChart>
+                            <Pie data={kategoriKeluarData} cx="50%" cy="50%" innerRadius={48} outerRadius={76} paddingAngle={3} dataKey="value" strokeWidth={0}>
+                              {kategoriKeluarData.map((_, i) => (
+                                <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              formatter={(value: number) => [rupiah(value), "Jumlah"]}
+                              contentStyle={{ borderRadius: "12px", border: "1px solid #f3f4f6", fontSize: "12px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-3">
+                          {kategoriKeluarData.map((d, i) => (
+                            <span key={d.name} className="flex items-center gap-1.5 text-[11px] text-gray-500">
+                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                              {d.name}
+                            </span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Filter + Search */}
             <div className="flex flex-wrap gap-2 items-center">

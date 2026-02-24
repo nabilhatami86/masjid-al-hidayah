@@ -8,6 +8,7 @@ import {
   Users,
   CalendarDays,
   Wallet,
+  Images,
   ExternalLink,
   LogOut,
   UserCircle,
@@ -17,10 +18,11 @@ import {
 import { useState } from "react";
 
 const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard",       icon: LayoutDashboard },
-  { href: "/admin/khatib",    label: "Khatib & Ustadz", icon: Users           },
-  { href: "/admin/jadwal",    label: "Jadwal Kegiatan", icon: CalendarDays    },
-  { href: "/admin/keuangan",  label: "Keuangan",        icon: Wallet          },
+  { href: "/admin/dashboard", label: "Dashboard",        icon: LayoutDashboard },
+  { href: "/admin/khatib",    label: "Khatib & Ustadz",  icon: Users           },
+  { href: "/admin/jadwal",    label: "Jadwal Kegiatan",  icon: CalendarDays    },
+  { href: "/admin/keuangan",  label: "Keuangan",         icon: Wallet          },
+  { href: "/admin/program",   label: "Program Unggulan", icon: Images          },
 ];
 
 function SidebarContent({
