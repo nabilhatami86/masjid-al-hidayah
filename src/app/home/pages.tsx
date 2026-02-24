@@ -1,0 +1,895 @@
+import Footer from "@/components/Footer/page";
+import Sidebar from "@/components/Sidebar/page";
+import Image from "next/image";
+import Link from "next/link";
+import { DEFAULT_KHATIB } from "@/lib/adminTypes";
+
+// ─── CONFIG ─────────────────────────────────────────────────────────────────
+const LAT = -7.3186;
+const LON = 112.7284;
+const METHOD = 20;
+
+// ─── TYPES ──────────────────────────────────────────────────────────────────
+interface ApiTimings {
+  Fajr: string;
+  Dhuhr: string;
+  Asr: string;
+  Maghrib: string;
+  Isha: string;
+}
+type PrayerKey = "fajr" | "dzuhur" | "ashar" | "maghrib" | "isya";
+interface PrayerRow {
+  date: string;
+  fajr: string;
+  dzuhur: string;
+  ashar: string;
+  maghrib: string;
+  isya: string;
+  isActive: boolean;
+  activeCol: PrayerKey | null;
+}
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function cleanTime(t: string) {
+  return t.replace(/\s*\(.*?\)/, "").trim();
+}
+
+function getWIBNow(): Date {
+  const now = new Date();
+  return new Date(
+    now.getTime() + now.getTimezoneOffset() * 60_000 + 7 * 3_600_000,
+  );
+}
+
+function toApiDate(d: Date) {
+  return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+}
+
+const MONTHS_ID = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+const DAYS_ID = [
+  "Minggu",
+  "Senin",
+  "Selasa",
+  "Rabu",
+  "Kamis",
+  "Jumat",
+  "Sabtu",
+];
+
+function toDisplayDate(d: Date) {
+  return `${d.getDate()} ${MONTHS_ID[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function getNextFriday(from: Date): Date {
+  const d = new Date(from);
+  const day = d.getDay();
+  d.setDate(d.getDate() + (day === 5 ? 0 : (5 - day + 7) % 7));
+  return d;
+}
+
+function getNextPrayer(wibNow: Date, t: ApiTimings): PrayerKey {
+  const nowMin = wibNow.getHours() * 60 + wibNow.getMinutes();
+  const schedule: { key: PrayerKey; time: string }[] = [
+    { key: "fajr", time: t.Fajr },
+    { key: "dzuhur", time: t.Dhuhr },
+    { key: "ashar", time: t.Asr },
+    { key: "maghrib", time: t.Maghrib },
+    { key: "isya", time: t.Isha },
+  ];
+  for (const s of schedule) {
+    const [h, m] = s.time.split(":").map(Number);
+    if (h * 60 + m > nowMin) return s.key;
+  }
+  return "isya";
+}
+
+// ─── UPCOMING SCHEDULE (server-side computed) ────────────────────────────────
+interface UpcomingEvent {
+  id: string;
+  tanggal: Date;
+  jenis: string;
+  badge: string;
+  topik: string;
+  khatib: string;
+  waktu: string;
+}
+
+function getUpcomingEvents(from: Date): UpcomingEvent[] {
+  const activeKhatib = DEFAULT_KHATIB.filter((k) => k.aktif);
+  let kidx = 0;
+  const events: UpcomingEvent[] = [];
+
+  const topicsFriday = [
+    "Keutamaan Sholat Berjamaah",
+    "Akhlak Muslim dalam Kehidupan Sehari-hari",
+    "Mengenal 99 Asmaul Husna",
+    "Birrul Walidain — Berbakti kepada Orang Tua",
+  ];
+  const topicsSabtu = [
+    "Fiqih Sholat Lengkap",
+    "Tafsir Juz Amma — Surah Pendek",
+  ];
+
+  const daysToFriday = (5 - from.getDay() + 7) % 7 || 7;
+
+  for (let w = 0; w < 4; w++) {
+    const friday = new Date(from);
+    friday.setDate(from.getDate() + daysToFriday + w * 7);
+    events.push({
+      id: `f${w}`,
+      tanggal: friday,
+      jenis: "Khutbah Jumat",
+      badge: "amber",
+      topik: topicsFriday[w % topicsFriday.length],
+      khatib: activeKhatib[kidx++ % activeKhatib.length].nama,
+      waktu: "11:30",
+    });
+    if (w < 2) {
+      const saturday = new Date(friday);
+      saturday.setDate(friday.getDate() + 1);
+      events.push({
+        id: `s${w}`,
+        tanggal: saturday,
+        jenis: w === 0 ? "Kajian Sabtu" : "Tahsin Al-Qur'an",
+        badge: w === 0 ? "blue" : "emerald",
+        topik: topicsSabtu[w],
+        khatib: activeKhatib[kidx++ % activeKhatib.length].nama,
+        waktu: w === 0 ? "08:00" : "09:00",
+      });
+    }
+  }
+  return events
+    .sort((a, b) => a.tanggal.getTime() - b.tanggal.getTime())
+    .slice(0, 6);
+}
+
+// ─── API FETCH ───────────────────────────────────────────────────────────────
+async function fetchTimings(dateStr: string): Promise<ApiTimings | null> {
+  try {
+    const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${LAT}&longitude=${LON}&method=${METHOD}`;
+    const res = await fetch(url, { next: { revalidate: 3600 } });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const t = json?.data?.timings;
+    if (!t) return null;
+    return {
+      Fajr: cleanTime(t.Fajr),
+      Dhuhr: cleanTime(t.Dhuhr),
+      Asr: cleanTime(t.Asr),
+      Maghrib: cleanTime(t.Maghrib),
+      Isha: cleanTime(t.Isha),
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ─── STATIC DATA ─────────────────────────────────────────────────────────────
+const prayerColumns: { label: string; key: PrayerKey }[] = [
+  { label: "FAJR", key: "fajr" },
+  { label: "DZUHUR", key: "dzuhur" },
+  { label: "ASHAR", key: "ashar" },
+  { label: "MAGHRIB", key: "maghrib" },
+  { label: "ISYA", key: "isya" },
+];
+const FALLBACK: ApiTimings = {
+  Fajr: "--:--",
+  Dhuhr: "--:--",
+  Asr: "--:--",
+  Maghrib: "--:--",
+  Isha: "--:--",
+};
+
+const BADGE_MAP: Record<string, string> = {
+  amber: "bg-amber-100 text-amber-700",
+  blue: "bg-blue-100 text-blue-700",
+  emerald: "bg-emerald-100 text-emerald-700",
+};
+
+const programs = [
+  {
+    title: "TPA Al-Hidayah",
+    desc: "Pendidikan Al-Qur'an untuk anak usia 5–15 tahun dengan metode terbaik.",
+    objectPos: "object-top",
+  },
+  {
+    title: "Kajian Sabtu",
+    desc: "Kajian rutin setiap Sabtu pagi dengan ustadz pilihan & topik aktual.",
+    objectPos: "object-center",
+  },
+  {
+    title: "Wakaf Produktif",
+    desc: "Program wakaf untuk kemandirian ekonomi umat & pembangunan masjid.",
+    objectPos: "object-bottom",
+  },
+  {
+    title: "Tahsin Al-Qur'an",
+    desc: "Perbaikan bacaan Al-Qur'an sesuai kaidah tajwid untuk semua usia.",
+    objectPos: "object-right",
+  },
+];
+
+const fasilitas = [
+  {
+    icon: "🕌",
+    title: "Ruang Shalat",
+    desc: "Kapasitas 500 jamaah, ber-AC, bersih & nyaman",
+  },
+  {
+    icon: "📚",
+    title: "Perpustakaan",
+    desc: "Koleksi 1.200+ buku & kitab Islam",
+  },
+  {
+    icon: "🎓",
+    title: "Kelas TPA",
+    desc: "Ruang kelas ber-AC untuk santri TPA",
+  },
+  {
+    icon: "💧",
+    title: "Tempat Wudhu",
+    desc: "Terpisah pria & wanita, selalu bersih",
+  },
+  {
+    icon: "📶",
+    title: "WiFi Gratis",
+    desc: "Internet cepat untuk jamaah selama di masjid",
+  },
+  {
+    icon: "🚗",
+    title: "Area Parkir",
+    desc: "Parkir luas, aman & gratis untuk jamaah",
+  },
+];
+
+const pengurus = [
+  {
+    jabatan: "Ketua DKM",
+    nama: "H. Suryadi, S.E.",
+    desc: "Mengkoordinasikan seluruh kegiatan masjid",
+  },
+  {
+    jabatan: "Imam Masjid",
+    nama: "Ustadz Ahmad Fauzi",
+    desc: "Imam shalat 5 waktu & pembimbing rohani",
+  },
+  {
+    jabatan: "Sekretaris",
+    nama: "Ir. Budi Santoso, M.T.",
+    desc: "Administrasi & hubungan masyarakat",
+  },
+];
+
+const berita = [
+  {
+    tanggal: "20 Februari 2026",
+    kategori: "Pendidikan",
+    badgeColor: "bg-blue-100 text-blue-700",
+    judul: "Penerimaan Santri TPA Baru Tahun Ajaran 2026/2027",
+    ringkasan:
+      "Masjid Al-Hidayah membuka pendaftaran santri TPA baru. Pendaftaran dibuka hingga 31 Maret 2026. Hubungi pengurus untuk informasi lebih lanjut.",
+  },
+  {
+    tanggal: "10 Februari 2026",
+    kategori: "Kajian",
+    badgeColor: "bg-emerald-100 text-emerald-700",
+    judul: "Kajian Tahsin Al-Qur'an Kembali Dibuka untuk Umum",
+    ringkasan:
+      "Program Tahsin hadir kembali setiap Sabtu pukul 09:00 WIB. Terbuka untuk umum, semua level diterima tanpa biaya pendaftaran.",
+  },
+  {
+    tanggal: "28 Desember 2025",
+    kategori: "Infrastruktur",
+    badgeColor: "bg-amber-100 text-amber-700",
+    judul: "Renovasi Selasar & Sound System Masjid Telah Selesai",
+    ringkasan:
+      "Alhamdulillah, renovasi selasar dan pemasangan sound system baru telah rampung. Terima kasih atas dukungan seluruh jamaah dan donatur.",
+  },
+];
+
+// ─── PAGE ────────────────────────────────────────────────────────────────────
+export default async function HomePages() {
+  const wibNow = getWIBNow();
+  const wibTomorrow = new Date(wibNow);
+  wibTomorrow.setDate(wibTomorrow.getDate() + 1);
+
+  const khutbahLabel = `Khutbah Jumat, ${toDisplayDate(getNextFriday(wibNow))}`;
+  const upcomingEvents = getUpcomingEvents(wibNow);
+
+  const [todayT, tomorrowT] = await Promise.all([
+    fetchTimings(toApiDate(wibNow)),
+    fetchTimings(toApiDate(wibTomorrow)),
+  ]);
+  const t1 = todayT ?? FALLBACK;
+  const t2 = tomorrowT ?? FALLBACK;
+
+  const prayerData: PrayerRow[] = [
+    {
+      date: toDisplayDate(wibNow),
+      fajr: t1.Fajr,
+      dzuhur: t1.Dhuhr,
+      ashar: t1.Asr,
+      maghrib: t1.Maghrib,
+      isya: t1.Isha,
+      isActive: true,
+      activeCol: getNextPrayer(wibNow, t1),
+    },
+    {
+      date: toDisplayDate(wibTomorrow),
+      fajr: t2.Fajr,
+      dzuhur: t2.Dhuhr,
+      ashar: t2.Asr,
+      maghrib: t2.Maghrib,
+      isya: t2.Isha,
+      isActive: false,
+      activeCol: null,
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#EDE8DF]">
+      <Sidebar />
+
+      {/* ══ HERO ══ */}
+      <section className="pt-[65px]">
+        <div className="relative w-full h-170 md:h-215">
+          <Image
+            src="/background.png"
+            alt="Masjid Al-Hidayah"
+            fill
+            priority
+            className="object-cover object-top"
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
+          <div className="absolute inset-0 flex flex-col items-center justify-end pb-36 md:pb-48 px-4 text-center">
+            <p className="text-amber-300 font-semibold text-xs md:text-sm uppercase tracking-[0.25em] mb-3">
+              Ketintang Baru XV No.20 · Surabaya
+            </p>
+            <h1 className="text-white font-bold text-4xl md:text-6xl mb-4 drop-shadow-lg">
+              Masjid Al-Hidayah
+            </h1>
+            <p className="text-white/80 text-base md:text-lg max-w-lg leading-relaxed">
+              Pusat Kegiatan Keislaman &amp; Pemberdayaan Umat
+            </p>
+            <div className="flex gap-3 mt-7 flex-wrap justify-center">
+              <a
+                href="#kajian"
+                className="bg-amber-500 hover:bg-amber-400 text-white font-semibold px-6 py-2.5 rounded-full text-sm transition-colors"
+              >
+                Jadwal Kegiatan
+              </a>
+              <a
+                href="#contact"
+                className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-semibold px-6 py-2.5 rounded-full text-sm transition-colors border border-white/30"
+              >
+                Donasi Sekarang
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══ JADWAL SHOLAT ══ */}
+      <div className="relative z-10 -mt-24 px-4 mb-10">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
+            {/* Kiri */}
+            <div className="md:w-64 shrink-0 p-5">
+              <div className="flex items-start gap-1.5 mb-0.5">
+                <svg
+                  className="w-4 h-4 mt-0.5 text-gray-500 shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span className="text-[13px] font-semibold text-gray-800 leading-snug">
+                  Ketintang Baru XV No.20, Kec.Gayungan, Surabaya
+                </span>
+              </div>
+              <p className="text-[12px] text-gray-500 mb-4 pl-[22px]">
+                {khutbahLabel}
+              </p>
+              <div className="flex items-center gap-3 bg-[#EBF5ED] rounded-xl p-3">
+                <div className="w-10 h-10 rounded-full bg-amber-100 shrink-0 flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-amber-700"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[12px] font-bold text-gray-900 leading-snug">
+                    Dr. Adi Hidayat, Lc., M.A.
+                  </p>
+                  <p className="text-[11px] text-gray-500">Khatib Jumat</p>
+                </div>
+              </div>
+            </div>
+            {/* Kanan: tabel */}
+            <div className="flex-1 p-5 overflow-x-auto">
+              <table className="w-full min-w-[380px] text-center text-sm">
+                <thead>
+                  <tr>
+                    <th className="text-left pb-2 pr-2 text-[11px] font-semibold text-gray-400 min-w-[130px]" />
+                    {prayerColumns.map(({ label }) => (
+                      <th
+                        key={label}
+                        className="pb-2 text-[11px] font-semibold text-gray-400 w-14"
+                      >
+                        {label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {prayerData.map((row, i) => (
+                    <tr key={i}>
+                      <td
+                        className={`py-2 pr-2 text-left rounded-l-xl ${row.isActive ? "bg-amber-50" : ""}`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`text-amber-500 text-[10px] ${row.isActive ? "visible" : "invisible"}`}
+                          >
+                            ▶
+                          </span>
+                          <span className="text-[12px] text-gray-600 whitespace-nowrap">
+                            {row.date}
+                          </span>
+                        </div>
+                      </td>
+                      {prayerColumns.map(({ key }, j) => (
+                        <td
+                          key={key}
+                          className={[
+                            "py-2 w-14",
+                            row.isActive ? "bg-amber-50" : "",
+                            j === prayerColumns.length - 1
+                              ? "rounded-r-xl"
+                              : "",
+                            row.isActive && key === row.activeCol
+                              ? "font-bold text-amber-600"
+                              : "font-medium text-gray-700",
+                          ].join(" ")}
+                        >
+                          {row[key]}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ══ PROFIL ══ */}
+      <section id="profil" className="px-4 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-amber-600 font-semibold text-xs uppercase tracking-[0.2em] mb-2">
+              Tentang Kami
+            </p>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Masjid Al-Hidayah
+            </h2>
+            <div className="w-12 h-1 bg-amber-400 rounded-full mx-auto mt-3" />
+          </div>
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-lg">
+                  🕌
+                </div>
+                <h3 className="font-bold text-[16px] text-gray-900">
+                  Sejarah Singkat
+                </h3>
+              </div>
+              <p className="text-[13.5px] text-gray-600 leading-relaxed mb-3">
+                Masjid Al-Hidayah berdiri sejak tahun 1985 atas prakarsa warga
+                Ketintang Baru XV sebagai pusat kegiatan keislaman di kawasan
+                Gayungan, Surabaya. Berawal dari mushola sederhana, kini hadir
+                sebagai masjid yang megah dengan berbagai fasilitas modern.
+              </p>
+              <p className="text-[13.5px] text-gray-600 leading-relaxed">
+                Selama lebih dari 39 tahun, masjid ini menjadi jangkar spiritual
+                ribuan jamaah, menyelenggarakan pendidikan, kajian, dan kegiatan
+                sosial kemasyarakatan.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center text-lg">
+                  🌟
+                </div>
+                <h3 className="font-bold text-[16px] text-gray-900">
+                  Visi &amp; Misi
+                </h3>
+              </div>
+              <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider mb-1">
+                Visi
+              </p>
+              <p className="text-[13.5px] text-gray-700 font-medium mb-4 leading-relaxed">
+                Menjadi pusat keislaman yang maju, inklusif, dan memberdayakan
+                umat menuju kehidupan baldatun thayyibatun wa rabbun ghafur.
+              </p>
+              <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider mb-2">
+                Misi
+              </p>
+              <ul className="space-y-1.5">
+                {[
+                  "Menyelenggarakan ibadah yang tertib dan berkualitas",
+                  "Mengembangkan pendidikan Islam dari usia dini",
+                  "Memberdayakan jamaah secara ekonomi & sosial",
+                  "Menjaga transparansi & akuntabilitas keuangan",
+                ].map((m) => (
+                  <li
+                    key={m}
+                    className="flex items-start gap-2 text-[13px] text-gray-600"
+                  >
+                    <span className="text-amber-500 mt-0.5 shrink-0">✓</span>
+                    {m}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          {/* Pengurus */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {pengurus.map((p) => (
+              <div
+                key={p.nama}
+                className="bg-white rounded-2xl p-5 shadow-sm text-center"
+              >
+                <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
+                  <svg
+                    className="w-7 h-7 text-amber-700"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                  </svg>
+                </div>
+                <p className="text-[11px] font-semibold text-amber-600 uppercase tracking-wider mb-1">
+                  {p.jabatan}
+                </p>
+                <p className="font-bold text-[14px] text-gray-900">{p.nama}</p>
+                <p className="text-[12px] text-gray-500 mt-1">{p.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ JADWAL KEGIATAN ══ */}
+      <section id="kajian" className="px-4 py-16 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <p className="text-amber-600 font-semibold text-xs uppercase tracking-[0.2em] mb-2">
+                Agenda Masjid
+              </p>
+              <h2 className="text-3xl font-bold text-gray-900">
+                Jadwal Kegiatan
+              </h2>
+              <div className="w-12 h-1 bg-amber-400 rounded-full mt-3" />
+            </div>
+            <Link
+              href="/laporan-keuangan"
+              className="text-[13px] text-amber-600 font-semibold hover:underline hidden sm:block"
+            >
+              Laporan Keuangan →
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upcomingEvents.map((ev) => (
+              <div
+                key={ev.id}
+                className="border border-gray-100 rounded-2xl p-4 hover:shadow-md transition-shadow bg-gray-50"
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <span
+                    className={`text-[11px] px-2.5 py-1 rounded-full font-semibold ${BADGE_MAP[ev.badge]}`}
+                  >
+                    {ev.jenis}
+                  </span>
+                  <span className="text-[11px] text-gray-400">
+                    {ev.waktu} WIB
+                  </span>
+                </div>
+                <div className="flex gap-3 items-start">
+                  <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-100 flex flex-col items-center justify-center shrink-0">
+                    <span className="text-[15px] font-bold text-amber-600 leading-none">
+                      {ev.tanggal.getDate()}
+                    </span>
+                    <span className="text-[9px] text-amber-400 uppercase font-semibold">
+                      {MONTHS_ID[ev.tanggal.getMonth()].slice(0, 3)}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-bold text-gray-800 leading-tight line-clamp-2">
+                      {ev.topik}
+                    </p>
+                    <p className="text-[12px] text-gray-500 mt-1">
+                      {DAYS_ID[ev.tanggal.getDay()]} · {ev.khatib}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-[12px] text-gray-400 mt-6">
+            Jadwal dapat berubah sewaktu-waktu · Pantau pengumuman di masjid
+          </p>
+        </div>
+      </section>
+
+      {/* ══ PROGRAM UNGGULAN ══ */}
+      <section id="program" className="px-4 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-amber-600 font-semibold text-xs uppercase tracking-[0.2em] mb-2">
+              Program Kami
+            </p>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Program Unggulan
+            </h2>
+            <div className="w-12 h-1 bg-amber-400 rounded-full mx-auto mt-3" />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {programs.map((program) => (
+              <div
+                key={program.title}
+                className="relative h-56 rounded-2xl overflow-hidden cursor-pointer group"
+              >
+                <Image
+                  src="/background.png"
+                  alt={program.title}
+                  fill
+                  className={`object-cover ${program.objectPos} group-hover:scale-105 transition-transform duration-500`}
+                />
+                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent group-hover:from-black/60 transition-all duration-300" />
+                <div className="absolute inset-x-0 bottom-0 p-5">
+                  <h3 className="text-white text-[17px] font-bold">
+                    {program.title}
+                  </h3>
+                  <p className="text-white/75 text-[12px] mt-1 leading-snug">
+                    {program.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ FASILITAS ══ */}
+      <section id="fasilitas" className="px-4 py-16 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-amber-600 font-semibold text-xs uppercase tracking-[0.2em] mb-2">
+              Sarana &amp; Prasarana
+            </p>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Fasilitas Masjid
+            </h2>
+            <div className="w-12 h-1 bg-amber-400 rounded-full mx-auto mt-3" />
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {fasilitas.map((f) => (
+              <div
+                key={f.title}
+                className="bg-gray-50 rounded-2xl p-5 hover:shadow-sm transition-shadow border border-gray-100"
+              >
+                <div className="text-3xl mb-3">{f.icon}</div>
+                <h4 className="font-bold text-[14px] text-gray-900 mb-1">
+                  {f.title}
+                </h4>
+                <p className="text-[12px] text-gray-500 leading-relaxed">
+                  {f.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ BERITA ══ */}
+      <section id="berita" className="px-4 py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-amber-600 font-semibold text-xs uppercase tracking-[0.2em] mb-2">
+              Informasi Terkini
+            </p>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Berita &amp; Pengumuman
+            </h2>
+            <div className="w-12 h-1 bg-amber-400 rounded-full mx-auto mt-3" />
+          </div>
+          <div className="grid sm:grid-cols-3 gap-5">
+            {berita.map((b) => (
+              <div
+                key={b.judul}
+                className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <div className="h-1.5 bg-amber-400" />
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span
+                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${b.badgeColor}`}
+                    >
+                      {b.kategori}
+                    </span>
+                    <span className="text-[11px] text-gray-400">
+                      {b.tanggal}
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-[14px] text-gray-900 leading-snug mb-2">
+                    {b.judul}
+                  </h4>
+                  <p className="text-[12.5px] text-gray-500 leading-relaxed">
+                    {b.ringkasan}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══ DONASI & KONTAK ══ */}
+      <section id="contact" className="px-4 py-16 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-amber-600 font-semibold text-xs uppercase tracking-[0.2em] mb-2">
+              Bersama Membangun Masjid
+            </p>
+            <h2 className="text-3xl font-bold text-gray-900">
+              Donasi &amp; Hubungi Kami
+            </h2>
+            <div className="w-12 h-1 bg-amber-400 rounded-full mx-auto mt-3" />
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Donasi */}
+            <div className="bg-linear-to-br from-amber-500 to-amber-600 rounded-2xl p-6 text-white">
+              <h3 className="font-bold text-[17px] mb-1">Donasi &amp; Wakaf</h3>
+              <p className="text-white/80 text-[13px] mb-5 leading-relaxed">
+                Setiap rupiah yang Anda sumbangkan menjadi amal jariyah yang
+                mengalir tanpa henti. Jazakumullahu Khairan.
+              </p>
+              <div className="space-y-3">
+                {[
+                  {
+                    bank: "BSI (Bank Syariah Indonesia)",
+                    norek: "7 1234 5678 9",
+                    atas: "Masjid Al-Hidayah",
+                  },
+                  {
+                    bank: "Bank Mandiri Syariah",
+                    norek: "0 2345 6789 0",
+                    atas: "DKM Al-Hidayah",
+                  },
+                  {
+                    bank: "BNI Syariah",
+                    norek: "0 9876 5432 1",
+                    atas: "Masjid Al-Hidayah",
+                  },
+                ].map((acc) => (
+                  <div
+                    key={acc.bank}
+                    className="bg-white/15 rounded-xl px-4 py-3"
+                  >
+                    <p className="text-[11px] text-white/70 font-semibold uppercase tracking-wider">
+                      {acc.bank}
+                    </p>
+                    <p className="font-bold text-[16px] tracking-wider mt-0.5">
+                      {acc.norek}
+                    </p>
+                    <p className="text-[12px] text-white/80">a.n. {acc.atas}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[12px] text-white/70 mt-4">
+                Konfirmasi via WhatsApp:{" "}
+                <span className="font-semibold text-white">0812-3456-7890</span>
+              </p>
+            </div>
+
+            {/* Kontak */}
+            <div className="space-y-3">
+              {[
+                {
+                  icon: "📍",
+                  label: "Alamat",
+                  value:
+                    "Jl. Ketintang Baru XV No.20\nKec. Gayungan, Surabaya 60231\nJawa Timur, Indonesia",
+                },
+                {
+                  icon: "🕐",
+                  label: "Jam Operasional",
+                  value:
+                    "Senin – Minggu: 04:00 – 21:00 WIB\nShalat 5 waktu berjamaah setiap hari",
+                },
+                {
+                  icon: "📞",
+                  label: "Kontak",
+                  value:
+                    "WhatsApp: 0812-3456-7890\nEmail: info@masjidalhidayah.id",
+                },
+                {
+                  icon: "📱",
+                  label: "Media Sosial",
+                  value:
+                    "Instagram: @masjidalhidayah.id\nYouTube: Masjid Al-Hidayah Surabaya",
+                },
+              ].map((c) => (
+                <div
+                  key={c.label}
+                  className="bg-gray-50 rounded-2xl p-4 border border-gray-100 flex gap-4 items-start"
+                >
+                  <span className="text-2xl shrink-0">{c.icon}</span>
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
+                      {c.label}
+                    </p>
+                    <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
+                      {c.value}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              <Link
+                href="/admin"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border-2 border-dashed border-gray-200 text-[13px] text-gray-400 hover:border-amber-300 hover:text-amber-600 transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Panel Admin Masjid
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
