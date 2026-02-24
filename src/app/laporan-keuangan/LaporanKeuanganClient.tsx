@@ -188,7 +188,7 @@ export default function LaporanKeuanganClient() {
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
             <XAxis dataKey="bulan" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
             <YAxis tickFormatter={rupiahShort} tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-            <Tooltip formatter={(v: number) => rupiah(v)} labelStyle={{ fontWeight: 600 }} />
+            <Tooltip formatter={(v: number | undefined) => v !== undefined ? rupiah(v) : ""} labelStyle={{ fontWeight: 600 }} />
             <Line type="monotone" dataKey="Saldo" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4, fill: "#f59e0b" }} activeDot={{ r: 6 }} />
           </LineChart>
         </ResponsiveContainer>
@@ -203,8 +203,7 @@ export default function LaporanKeuanganClient() {
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie
-                activeIndex={activePieK}
-                activeShape={ActiveShape}
+                {...({activeIndex: activePieK, activeShape: ActiveShape} as any)}
                 data={pieKeluar}
                 cx="50%" cy="50%"
                 innerRadius={65} outerRadius={95}
@@ -238,8 +237,7 @@ export default function LaporanKeuanganClient() {
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie
-                activeIndex={activePieM}
-                activeShape={ActiveShape}
+                {...({activeIndex: activePieM, activeShape: ActiveShape} as any)}
                 data={pieMasuk}
                 cx="50%" cy="50%"
                 innerRadius={65} outerRadius={95}
