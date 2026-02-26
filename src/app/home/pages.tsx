@@ -1,3 +1,5 @@
+import BeritaSection from "./BeritaSection";
+import CopyNorekCard from "./CopyNorekCard";
 import Footer from "@/components/Footer/page";
 import Sidebar from "@/components/Sidebar/page";
 import Image from "next/image";
@@ -278,35 +280,6 @@ const pengurus = [
   },
 ];
 
-const berita = [
-  {
-    tanggal: "20 Februari 2026",
-    kategori: "Pendidikan",
-    dotColor: "bg-blue-500",
-    labelColor: "text-blue-600",
-    judul: "Penerimaan Santri TPA Baru Tahun Ajaran 2026/2027",
-    ringkasan:
-      "Masjid Al-Hidayah membuka pendaftaran santri TPA baru. Pendaftaran dibuka hingga 31 Maret 2026. Hubungi pengurus untuk informasi lebih lanjut.",
-  },
-  {
-    tanggal: "10 Februari 2026",
-    kategori: "Kajian",
-    dotColor: "bg-emerald-500",
-    labelColor: "text-emerald-700",
-    judul: "Kajian Tahsin Al-Qur'an Kembali Dibuka untuk Umum",
-    ringkasan:
-      "Program Tahsin hadir kembali setiap Sabtu pukul 09:00 WIB. Terbuka untuk umum, semua level diterima tanpa biaya pendaftaran.",
-  },
-  {
-    tanggal: "28 Desember 2025",
-    kategori: "Infrastruktur",
-    dotColor: "bg-amber-500",
-    labelColor: "text-amber-700",
-    judul: "Renovasi Selasar & Sound System Masjid Telah Selesai",
-    ringkasan:
-      "Alhamdulillah, renovasi selasar dan pemasangan sound system baru telah rampung. Terima kasih atas dukungan seluruh jamaah dan donatur.",
-  },
-];
 
 // ─── PAGE ────────────────────────────────────────────────────────────────────
 export default async function HomePages() {
@@ -786,84 +759,7 @@ export default async function HomePages() {
       </section>
 
       {/* ══ BERITA ══ */}
-      <section id="berita" className="px-4 py-16 bg-white">
-        <div className="max-w-4xl mx-auto">
-          {/* Header row */}
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <p className="text-amber-600 font-semibold text-[11px] uppercase tracking-[0.18em] mb-1">
-                Informasi Terkini
-              </p>
-              <h2 className="text-[26px] font-bold text-gray-900 leading-tight">
-                Berita &amp; Pengumuman
-              </h2>
-            </div>
-            <button className="hidden sm:flex items-center gap-1 text-[12px] font-medium text-gray-400 hover:text-amber-600 transition-colors shrink-0 mb-1">
-              Lihat semua
-              <ChevronRight size={14} strokeWidth={2.5} />
-            </button>
-          </div>
-
-          {/* Featured + side layout */}
-          <div className="grid sm:grid-cols-[1.4fr_1fr] gap-4">
-            {/* Featured card — first item */}
-            <div className="group flex flex-col bg-gray-50 hover:bg-amber-50/60 border border-gray-100 hover:border-amber-200/80 rounded-2xl p-6 cursor-pointer transition-all duration-200">
-              <div className="flex items-center gap-2 mb-4">
-                <span className={`w-2 h-2 rounded-sm shrink-0 ${berita[0].dotColor}`} />
-                <span className={`text-[10.5px] font-bold uppercase tracking-widest ${berita[0].labelColor}`}>
-                  {berita[0].kategori}
-                </span>
-              </div>
-              <h3 className="text-[16.5px] font-bold text-gray-900 leading-snug mb-3 group-hover:text-amber-800 transition-colors">
-                {berita[0].judul}
-              </h3>
-              <p className="text-[12.5px] text-gray-500 leading-relaxed flex-1 mb-5">
-                {berita[0].ringkasan}
-              </p>
-              <div className="flex items-center justify-between pt-3 border-t border-gray-200/80">
-                <span className="text-[11px] text-gray-400">{berita[0].tanggal}</span>
-                <span className="text-[11.5px] font-semibold text-amber-600 flex items-center gap-0.5 group-hover:gap-1.5 transition-all duration-150">
-                  Selengkapnya <ChevronRight size={13} strokeWidth={2.5} />
-                </span>
-              </div>
-            </div>
-
-            {/* Side stack — remaining items */}
-            <div className="flex flex-col gap-4">
-              {berita.slice(1).map((b) => (
-                <div
-                  key={b.judul}
-                  className="group flex flex-col bg-gray-50 hover:bg-amber-50/60 border border-gray-100 hover:border-amber-200/80 rounded-2xl p-5 cursor-pointer transition-all duration-200 flex-1"
-                >
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <span className={`w-1.5 h-1.5 rounded-sm shrink-0 ${b.dotColor}`} />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${b.labelColor}`}>
-                      {b.kategori}
-                    </span>
-                  </div>
-                  <h4 className="text-[13.5px] font-bold text-gray-900 leading-snug group-hover:text-amber-800 transition-colors flex-1 mb-3">
-                    {b.judul}
-                  </h4>
-                  <div className="flex items-center justify-between pt-2.5 border-t border-gray-200/80">
-                    <span className="text-[11px] text-gray-400">{b.tanggal}</span>
-                    <span className="text-[11px] font-semibold text-amber-600 flex items-center gap-0.5 group-hover:gap-1 transition-all duration-150">
-                      Baca <ChevronRight size={12} strokeWidth={2.5} />
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile "lihat semua" */}
-          <div className="mt-5 flex sm:hidden justify-center">
-            <button className="flex items-center gap-1 text-[12px] font-medium text-gray-400 hover:text-amber-600 transition-colors">
-              Lihat semua berita
-              <ChevronRight size={14} strokeWidth={2.5} />
-            </button>
-          </div>
-        </div>
-      </section>
+      <BeritaSection />
 
       {/* ══ DONASI & KONTAK ══ */}
       <section id="contact" className="px-4 py-16 bg-white">
@@ -903,18 +799,12 @@ export default async function HomePages() {
                     atas: "Masjid Al-Hidayah",
                   },
                 ].map((acc) => (
-                  <div
+                  <CopyNorekCard
                     key={acc.bank}
-                    className="bg-white/15 rounded-xl px-4 py-3"
-                  >
-                    <p className="text-[11px] text-white/70 font-semibold uppercase tracking-wider">
-                      {acc.bank}
-                    </p>
-                    <p className="font-bold text-[16px] tracking-wider mt-0.5">
-                      {acc.norek}
-                    </p>
-                    <p className="text-[12px] text-white/80">a.n. {acc.atas}</p>
-                  </div>
+                    bank={acc.bank}
+                    norek={acc.norek}
+                    atas={acc.atas}
+                  />
                 ))}
               </div>
               <p className="text-[12px] text-white/70 mt-4">
