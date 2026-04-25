@@ -35,6 +35,18 @@ create table if not exists jadwal (
   updated_at      timestamptz not null default now()
 );
 
+-- ─── TABLE: rekening ────────────────────────────────────────
+create table if not exists rekening (
+  id         uuid primary key default uuid_generate_v4(),
+  bank       text    not null,
+  norek      text    not null,
+  atas       text    not null,
+  urutan     integer not null default 0,
+  aktif      boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 -- ─── TABLE: transaksi ───────────────────────────────────────
 create table if not exists transaksi (
   id           uuid primary key default uuid_generate_v4(),
@@ -68,7 +80,12 @@ create trigger transaksi_updated_at
   before update on transaksi
   for each row execute function update_updated_at();
 
+create trigger rekening_updated_at
+  before update on rekening
+  for each row execute function update_updated_at();
+
 -- ─── INDEXES ────────────────────────────────────────────────
+create index if not exists idx_rekening_urutan      on rekening(urutan);
 create index if not exists idx_jadwal_tanggal      on jadwal(tanggal);
 create index if not exists idx_jadwal_khatib_id    on jadwal(khatib_id);
 create index if not exists idx_transaksi_tanggal   on transaksi(tanggal);
@@ -82,6 +99,7 @@ create index if not exists idx_transaksi_kategori  on transaksi(kategori);
 alter table khatib    enable row level security;
 alter table jadwal    enable row level security;
 alter table transaksi enable row level security;
+alter table rekening  enable row level security;
 
 -- khatib: semua bisa baca, hanya admin yg bisa ubah
 create policy "khatib_public_read"    on khatib    for select using (true);
@@ -100,6 +118,20 @@ create policy "transaksi_public_read"  on transaksi for select using (true);
 create policy "transaksi_admin_insert" on transaksi for insert with check (auth.role() = 'authenticated');
 create policy "transaksi_admin_update" on transaksi for update using (auth.role() = 'authenticated');
 create policy "transaksi_admin_delete" on transaksi for delete using (auth.role() = 'authenticated');
+
+-- rekening: semua bisa baca, hanya admin yg bisa ubah
+create policy "rekening_public_read"   on rekening  for select using (true);
+create policy "rekening_admin_insert"  on rekening  for insert with check (auth.role() = 'authenticated');
+create policy "rekening_admin_update"  on rekening  for update using (auth.role() = 'authenticated');
+create policy "rekening_admin_delete"  on rekening  for delete using (auth.role() = 'authenticated');
+
+-- ============================================================
+-- SEED DATA — Rekening
+-- ============================================================
+insert into rekening (bank, norek, atas, urutan, aktif) values
+  ('BSI (Bank Syariah Indonesia)', '7 1234 5678 9', 'Masjid Al-Hidayah', 0, true),
+  ('Bank Mandiri Syariah',         '0 2345 6789 0', 'DKM Al-Hidayah',    1, true),
+  ('BNI Syariah',                  '0 9876 5432 1', 'Masjid Al-Hidayah', 2, true);
 
 -- ============================================================
 -- SEED DATA — Khatib

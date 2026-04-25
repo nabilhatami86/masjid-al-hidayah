@@ -9,6 +9,7 @@ import {
   CalendarDays,
   Wallet,
   Images,
+  CreditCard,
   ExternalLink,
   LogOut,
   UserCircle,
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/admin/jadwal",    label: "Jadwal Kegiatan",  icon: CalendarDays    },
   { href: "/admin/keuangan",  label: "Keuangan",         icon: Wallet          },
   { href: "/admin/program",   label: "Program Unggulan", icon: Images          },
+  { href: "/admin/rekening",  label: "Nomor Rekening",   icon: CreditCard      },
 ];
 
 function SidebarContent({

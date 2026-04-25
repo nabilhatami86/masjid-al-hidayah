@@ -26,6 +26,15 @@ export interface Jadwal {
   keterangan: string;
 }
 
+export interface Rekening {
+  id: string;
+  bank: string;
+  norek: string;
+  atas: string;
+  urutan: number;
+  aktif: boolean;
+}
+
 export interface TransaksiAdmin {
   id: string;
   tanggal: string;

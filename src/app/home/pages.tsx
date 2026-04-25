@@ -1,5 +1,5 @@
 import BeritaSection from "./BeritaSection";
-import CopyNorekCard from "./CopyNorekCard";
+import DonasiSection from "./DonasiSection";
 import Footer from "@/components/Footer/page";
 import Sidebar from "@/components/Sidebar/page";
 import Image from "next/image";
@@ -769,44 +769,8 @@ export default async function HomePages() {
             <div className="w-12 h-1 bg-amber-400 rounded-full mx-auto mt-3" />
           </div>
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Donasi */}
-            <div className="bg-linear-to-br from-amber-500 to-amber-600 rounded-2xl p-6 text-white">
-              <h3 className="font-bold text-[17px] mb-1">Donasi &amp; Wakaf</h3>
-              <p className="text-white/80 text-[13px] mb-5 leading-relaxed">
-                Setiap rupiah yang Anda sumbangkan menjadi amal jariyah yang
-                mengalir tanpa henti. Jazakumullahu Khairan.
-              </p>
-              <div className="space-y-3">
-                {[
-                  {
-                    bank: "BSI (Bank Syariah Indonesia)",
-                    norek: "7 1234 5678 9",
-                    atas: "Masjid Al-Hidayah",
-                  },
-                  {
-                    bank: "Bank Mandiri Syariah",
-                    norek: "0 2345 6789 0",
-                    atas: "DKM Al-Hidayah",
-                  },
-                  {
-                    bank: "BNI Syariah",
-                    norek: "0 9876 5432 1",
-                    atas: "Masjid Al-Hidayah",
-                  },
-                ].map((acc) => (
-                  <CopyNorekCard
-                    key={acc.bank}
-                    bank={acc.bank}
-                    norek={acc.norek}
-                    atas={acc.atas}
-                  />
-                ))}
-              </div>
-              <p className="text-[12px] text-white/70 mt-4">
-                Konfirmasi via WhatsApp:{" "}
-                <span className="font-semibold text-white">0812-3456-7890</span>
-              </p>
-            </div>
+            {/* Donasi — live client component */}
+            <DonasiSection />
 
             {/* Kontak */}
             <div className="space-y-3">
