@@ -1,57 +1,156 @@
-# ERD — Masjid Al-Hidayah
+# Entity Relationship Diagram — Sistem Informasi Masjid Al-Hidayah
+
+**Lokasi:** Ketintang Baru XV No.20, Kec. Gayungan, Surabaya
+**Database:** PostgreSQL (Supabase)
+**Dibuat:** April 2026
+
+---
 
 ```mermaid
 erDiagram
     KHATIB {
-        uuid    id           PK
-        text    nama
-        text    gelar
-        text    spesialisasi
-        text    no_hp
-        text    email
-        boolean aktif
-        text    foto_url     "nullable"
+        uuid        id           PK "Primary Key"
+        text        nama         "NOT NULL"
+        text        gelar        "default: kosong"
+        text        spesialisasi "default: kosong"
+        text        no_hp        "default: kosong"
+        text        email        "default: kosong"
+        boolean     aktif        "default: true"
+        text        foto_url     "nullable"
+        timestamptz created_at   "default: now()"
+        timestamptz updated_at   "default: now()"
     }
 
     JADWAL {
-        uuid id              PK
-        date tanggal
-        text jenis_kegiatan
-        uuid khatib_id       FK
-        text topik
-        time waktu
-        text keterangan
+        uuid        id             PK "Primary Key"
+        date        tanggal        "NOT NULL"
+        text        jenis_kegiatan "NOT NULL"
+        uuid        khatib_id      FK "nullable — ON DELETE SET NULL"
+        text        topik          "default: kosong"
+        text        waktu          "format HH:MM"
+        text        keterangan     "default: kosong"
+        timestamptz created_at     "default: now()"
+        timestamptz updated_at     "default: now()"
     }
 
     TRANSAKSI {
-        uuid    id          PK
-        date    tanggal
-        text    keterangan
-        text    kategori
-        text    jenis       "'masuk' | 'keluar'"
-        numeric jumlah
-    }
-
-    PROGRAM_IMAGES {
-        text key       PK
-        text image_url "nullable"
+        uuid        id          PK "Primary Key"
+        date        tanggal     "NOT NULL"
+        text        keterangan  "NOT NULL"
+        text        kategori    "NOT NULL"
+        text        jenis       "CHECK: masuk | keluar"
+        bigint      jumlah      "dalam Rupiah, CHECK: > 0"
+        timestamptz created_at  "default: now()"
+        timestamptz updated_at  "default: now()"
     }
 
     KHATIB ||--o{ JADWAL : "mengisi"
 ```
 
-## Keterangan Relasi
+---
 
-| Relasi | Kardinalitas | Deskripsi |
-|--------|-------------|-----------|
-| `KHATIB` → `JADWAL` | 1 ke banyak (opsional) | Satu khatib bisa mengisi banyak jadwal; jadwal boleh tanpa khatib (`khatib_id` nullable) |
+## Keterangan Tabel
 
-## Enum / Nilai Tetap
+### KHATIB
+Menyimpan data penceramah/khatib yang terdaftar di masjid.
 
-| Kolom | Nilai |
-|-------|-------|
-| `transaksi.jenis` | `masuk`, `keluar` |
-| `transaksi.kategori` (masuk) | Infaq Jumat, Kotak Amal, Donasi Transfer, Wakaf, Zakat |
-| `transaksi.kategori` (keluar) | Listrik & Air, Kebersihan, Operasional, Kajian & Kegiatan, Pembangunan & Renovasi |
-| `jadwal.jenis_kegiatan` | Khutbah Jumat, Kajian Sabtu, Tahsin Al-Qur'an, Tahfidz, TPA Al-Hidayah, Maulid & Kegiatan Khusus |
-```
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id` | UUID | Primary key, di-generate otomatis |
+| `nama` | TEXT | Nama lengkap khatib |
+| `gelar` | TEXT | Gelar akademik (contoh: Lc., M.A.) |
+| `spesialisasi` | TEXT | Bidang keahlian (contoh: Tafsir & Hadist) |
+| `no_hp` | TEXT | Nomor handphone |
+| `email` | TEXT | Alamat email |
+| `aktif` | BOOLEAN | Status aktif/tidak aktif |
+| `foto_url` | TEXT | URL foto dari storage (opsional) |
+| `created_at` | TIMESTAMPTZ | Waktu data dibuat |
+| `updated_at` | TIMESTAMPTZ | Waktu data terakhir diubah |
+
+---
+
+### JADWAL
+Menyimpan jadwal kegiatan masjid (khutbah, kajian, TPA, dll).
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id` | UUID | Primary key, di-generate otomatis |
+| `tanggal` | DATE | Tanggal kegiatan (YYYY-MM-DD) |
+| `jenis_kegiatan` | TEXT | Jenis kegiatan (lihat enum di bawah) |
+| `khatib_id` | UUID | Foreign key ke tabel KHATIB (boleh kosong) |
+| `topik` | TEXT | Topik/tema kegiatan |
+| `waktu` | TEXT | Jam kegiatan format HH:MM |
+| `keterangan` | TEXT | Catatan tambahan |
+| `created_at` | TIMESTAMPTZ | Waktu data dibuat |
+| `updated_at` | TIMESTAMPTZ | Waktu data terakhir diubah |
+
+---
+
+### TRANSAKSI
+Menyimpan seluruh transaksi keuangan masjid (pemasukan & pengeluaran).
+
+| Kolom | Tipe | Keterangan |
+|-------|------|------------|
+| `id` | UUID | Primary key, di-generate otomatis |
+| `tanggal` | DATE | Tanggal transaksi (YYYY-MM-DD) |
+| `keterangan` | TEXT | Deskripsi transaksi |
+| `kategori` | TEXT | Kategori transaksi (lihat enum di bawah) |
+| `jenis` | TEXT | `masuk` = pemasukan, `keluar` = pengeluaran |
+| `jumlah` | BIGINT | Nominal dalam Rupiah (harus > 0) |
+| `created_at` | TIMESTAMPTZ | Waktu data dibuat |
+| `updated_at` | TIMESTAMPTZ | Waktu data terakhir diubah |
+
+---
+
+## Relasi Antar Tabel
+
+| Relasi | Tipe | Keterangan |
+|--------|------|------------|
+| KHATIB → JADWAL | One-to-Many (opsional) | Satu khatib dapat mengisi banyak jadwal. Jika khatib dihapus, kolom `khatib_id` di jadwal menjadi NULL (ON DELETE SET NULL) |
+
+---
+
+## Nilai Enum
+
+### Jenis Transaksi (`transaksi.jenis`)
+| Nilai | Keterangan |
+|-------|------------|
+| `masuk` | Pemasukan / penerimaan kas |
+| `keluar` | Pengeluaran / pembayaran kas |
+
+### Kategori Pemasukan (`transaksi.kategori`)
+| Kategori |
+|----------|
+| Infaq Jumat |
+| Kotak Amal |
+| Donasi Transfer |
+| Wakaf |
+| Zakat |
+
+### Kategori Pengeluaran (`transaksi.kategori`)
+| Kategori |
+|----------|
+| Listrik & Air |
+| Kebersihan |
+| Operasional |
+| Kajian & Kegiatan |
+| Pembangunan & Renovasi |
+
+### Jenis Kegiatan (`jadwal.jenis_kegiatan`)
+| Jenis Kegiatan |
+|----------------|
+| Khutbah Jumat |
+| Kajian Sabtu |
+| Tahsin Al-Qur'an |
+| Tahfidz |
+| TPA Al-Hidayah |
+| Maulid & Kegiatan Khusus |
+
+---
+
+## Keamanan Data (Row Level Security)
+
+| Operasi | Hak Akses |
+|---------|-----------|
+| SELECT (baca) | Publik — siapa saja dapat membaca |
+| INSERT / UPDATE / DELETE | Hanya admin yang terautentikasi |

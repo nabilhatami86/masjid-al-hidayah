@@ -28,9 +28,8 @@ import {
 } from "lucide-react";
 
 // ─── CONFIG ─────────────────────────────────────────────────────────────────
-const LAT = -7.3186;
-const LON = 112.7284;
-const METHOD = 20;
+// ID kota Surabaya — sumber: https://api.myquran.com/v2/sholat/kota/semua
+const KOTA_ID = "1638";
 
 // ─── TYPES ──────────────────────────────────────────────────────────────────
 interface ApiTimings {
@@ -53,10 +52,6 @@ interface PrayerRow {
 }
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
-function cleanTime(t: string) {
-  return t.replace(/\s*\(.*?\)/, "").trim();
-}
-
 function getWIBNow(): Date {
   const now = new Date();
   return new Date(
@@ -64,9 +59,6 @@ function getWIBNow(): Date {
   );
 }
 
-function toApiDate(d: Date) {
-  return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
-}
 
 const MONTHS_ID = [
   "Januari",
@@ -179,21 +171,24 @@ function getUpcomingEvents(from: Date): UpcomingEvent[] {
     .slice(0, 6);
 }
 
-// ─── API FETCH ───────────────────────────────────────────────────────────────
-async function fetchTimings(dateStr: string): Promise<ApiTimings | null> {
+// ─── API FETCH — Kemenag via MyQuran ────────────────────────────────────────
+async function fetchTimings(d: Date): Promise<ApiTimings | null> {
   try {
-    const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${LAT}&longitude=${LON}&method=${METHOD}`;
-    const res = await fetch(url, { next: { revalidate: 3600 } });
+    const yyyy = d.getFullYear();
+    const mm   = String(d.getMonth() + 1).padStart(2, "0");
+    const dd   = String(d.getDate()).padStart(2, "0");
+    const url  = `https://api.myquran.com/v2/sholat/jadwal/${KOTA_ID}/${yyyy}/${mm}/${dd}`;
+    const res  = await fetch(url, { next: { revalidate: 3600 } });
     if (!res.ok) return null;
     const json = await res.json();
-    const t = json?.data?.timings;
-    if (!t) return null;
+    const j    = json?.data?.jadwal;
+    if (!j) return null;
     return {
-      Fajr: cleanTime(t.Fajr),
-      Dhuhr: cleanTime(t.Dhuhr),
-      Asr: cleanTime(t.Asr),
-      Maghrib: cleanTime(t.Maghrib),
-      Isha: cleanTime(t.Isha),
+      Fajr:    j.subuh,
+      Dhuhr:   j.dzuhur,
+      Asr:     j.ashar,
+      Maghrib: j.maghrib,
+      Isha:    j.isya,
     };
   } catch {
     return null;
@@ -292,8 +287,8 @@ export default async function HomePages() {
   const upcomingEvents = getUpcomingEvents(wibNow);
 
   const [todayT, tomorrowT] = await Promise.all([
-    fetchTimings(toApiDate(wibNow)),
-    fetchTimings(toApiDate(wibTomorrow)),
+    fetchTimings(wibNow),
+    fetchTimings(wibTomorrow),
   ]);
   const t1 = todayT ?? FALLBACK;
   const t2 = tomorrowT ?? FALLBACK;

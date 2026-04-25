@@ -107,10 +107,17 @@ npm install
 Buat file `.env.local` di root project:
 
 ```env
-# Supabase — ambil dari: Settings > API
+# Supabase — ambil dari: Settings > Data API
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxxxxxxxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Publishable key (aman untuk browser, gunakan jika RLS sudah aktif)
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_xxxxxxxxxxxxxxxxxxxx
+
+# Secret key (hanya server-side, JANGAN prefix NEXT_PUBLIC_)
+SUPABASE_SERVICE_ROLE_KEY=sb_secret_xxxxxxxxxxxxxxxxxxxx
 ```
+
+> **Cara ambil key:** Supabase Dashboard → Settings → Data API → salin **Project URL**, **Publishable key**, dan **Secret key**.
 
 ### 4. Jalankan Development Server
 
@@ -138,6 +145,24 @@ Lihat [ERD.md](ERD.md) untuk diagram lengkap.
 ### Row Level Security (RLS)
 - **SELECT**: terbuka untuk publik (tanpa autentikasi)
 - **INSERT / UPDATE / DELETE**: hanya `authenticated` (admin Supabase)
+
+---
+
+## Integrasi Eksternal
+
+### Jadwal Sholat — Kemenag via MyQuran API
+
+Jadwal sholat di halaman beranda menggunakan data resmi **Kementerian Agama RI** yang diakses melalui [MyQuran API v2](https://api.myquran.com/).
+
+| Info | Detail |
+|------|--------|
+| Endpoint | `GET https://api.myquran.com/v2/sholat/jadwal/{kota_id}/{yyyy}/{mm}/{dd}` |
+| Kota | KOTA SURABAYA (`id: 1638`) |
+| Daftar kota | `https://api.myquran.com/v2/sholat/kota/semua` |
+| Cache | 1 jam (`revalidate: 3600`) |
+| Field dipakai | `subuh`, `dzuhur`, `ashar`, `maghrib`, `isya` |
+
+Untuk mengganti kota, ubah konstanta `KOTA_ID` di [src/app/home/pages.tsx](src/app/home/pages.tsx#L32).
 
 ---
 
@@ -197,6 +222,7 @@ npm run lint     # Cek linting ESLint
 3. Tambahkan environment variables:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
 4. Deploy
 
 ### Catatan Penting
