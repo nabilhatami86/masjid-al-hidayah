@@ -47,12 +47,6 @@ create policy "rekening_admin_insert"  on rekening for insert with check (auth.r
 create policy "rekening_admin_update"  on rekening for update using (auth.role() = 'authenticated');
 create policy "rekening_admin_delete"  on rekening for delete using (auth.role() = 'authenticated');
 
--- ─── SEED DATA ───────────────────────────────────────────────
-insert into rekening (bank, norek, atas, urutan, aktif) values
-  ('BSI (Bank Syariah Indonesia)', '7 1234 5678 9', 'Masjid Al-Hidayah', 0, true),
-  ('Bank Mandiri Syariah',         '0 2345 6789 0', 'DKM Al-Hidayah',    1, true),
-  ('BNI Syariah',                  '0 9876 5432 1', 'Masjid Al-Hidayah', 2, true)
-on conflict do nothing;
 
 -- ============================================================
 -- TABLE: pengaturan (global key-value settings, e.g. qris_url)
@@ -79,3 +73,34 @@ create policy "pengaturan_public_read"   on pengaturan for select using (true);
 create policy "pengaturan_admin_insert"  on pengaturan for insert with check (auth.role() = 'authenticated');
 create policy "pengaturan_admin_update"  on pengaturan for update using (auth.role() = 'authenticated');
 create policy "pengaturan_admin_delete"  on pengaturan for delete using (auth.role() = 'authenticated');
+
+-- ============================================================
+-- STORAGE BUCKET: qris (untuk gambar QRIS donasi)
+-- ============================================================
+insert into storage.buckets (id, name, public)
+values ('qris', 'qris', true)
+on conflict (id) do nothing;
+
+-- Policy: siapa saja bisa melihat/download gambar QRIS
+drop policy if exists "qris_public_select" on storage.objects;
+create policy "qris_public_select"
+  on storage.objects for select
+  using (bucket_id = 'qris');
+
+-- Policy: siapa saja bisa upload (anon key) — cocok karena pakai service role di server
+drop policy if exists "qris_public_insert" on storage.objects;
+create policy "qris_public_insert"
+  on storage.objects for insert
+  with check (bucket_id = 'qris');
+
+-- Policy: siapa saja bisa update/upsert
+drop policy if exists "qris_public_update" on storage.objects;
+create policy "qris_public_update"
+  on storage.objects for update
+  using (bucket_id = 'qris');
+
+-- Policy: siapa saja bisa hapus
+drop policy if exists "qris_public_delete" on storage.objects;
+create policy "qris_public_delete"
+  on storage.objects for delete
+  using (bucket_id = 'qris');

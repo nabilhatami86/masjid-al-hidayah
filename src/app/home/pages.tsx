@@ -1,5 +1,6 @@
 import BeritaSection from "./BeritaSection";
 import DonasiSection from "./DonasiSection";
+import JadwalSholatClient from "./JadwalSholatClient";
 import Footer from "@/components/Footer/page";
 import Sidebar from "@/components/Sidebar/page";
 import Image from "next/image";
@@ -23,7 +24,6 @@ import {
   Phone,
   Smartphone,
   Check,
-  ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 
@@ -196,13 +196,6 @@ async function fetchTimings(d: Date): Promise<ApiTimings | null> {
 }
 
 // ─── STATIC DATA ─────────────────────────────────────────────────────────────
-const prayerColumns: { label: string; key: PrayerKey }[] = [
-  { label: "FAJR", key: "fajr" },
-  { label: "DZUHUR", key: "dzuhur" },
-  { label: "ASHAR", key: "ashar" },
-  { label: "MAGHRIB", key: "maghrib" },
-  { label: "ISYA", key: "isya" },
-];
 const FALLBACK: ApiTimings = {
   Fajr: "--:--",
   Dhuhr: "--:--",
@@ -400,128 +393,11 @@ export default async function HomePages() {
       </section>
 
       {/* ══ JADWAL SHOLAT ══ */}
-      <div className="relative z-10 -mt-24 px-4 mb-10">
-        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header strip */}
-          <div className="bg-amber-500 px-5 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Clock size={15} className="text-white" />
-              <h2 className="text-white font-bold text-[13px] uppercase tracking-widest">
-                Jadwal Sholat
-              </h2>
-            </div>
-            <span className="text-amber-100 text-[11px] font-medium">
-              Hari Ini &amp; Besok
-            </span>
-          </div>
-          <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-gray-100">
-            {/* Kiri */}
-            <div className="md:w-68 shrink-0 p-5">
-              <div className="flex items-start gap-1.5 mb-0.5">
-                <MapPin size={15} className="mt-0.5 text-gray-400 shrink-0" />
-                <span className="text-[12px] font-medium text-gray-600 leading-snug">
-                  Ketintang Baru XV No.20, Kec.Gayungan, Surabaya
-                </span>
-              </div>
-              <p className="text-[11px] text-amber-600 font-semibold mb-4 pl-5.5">
-                {khutbahLabel}
-              </p>
-
-              {/* Khatib card */}
-              <div className="bg-linear-to-br from-amber-50 to-orange-50 rounded-xl p-3.5 border border-amber-200">
-                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2.5">
-                  Khatib Jumat
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="relative w-12 h-12 rounded-full overflow-hidden bg-amber-50 ring-2 ring-amber-200 shrink-0">
-                    {fridayKhatib?.fotoUrl ? (
-                      <Image
-                        src={fridayKhatib.fotoUrl}
-                        alt={fridayKhatib.nama}
-                        fill
-                        className="object-cover object-top"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-amber-100">
-                        <User size={22} className="text-amber-700" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[12.5px] font-bold text-gray-900 leading-snug">
-                      {fridayKhatib
-                        ? `${fridayKhatib.nama}${fridayKhatib.gelar ? `, ${fridayKhatib.gelar}` : ""}`
-                        : "Belum Ditentukan"}
-                    </p>
-                    {fridayKhatib?.spesialisasi && (
-                      <p className="text-[11px] text-amber-600 mt-0.5 font-medium truncate">
-                        {fridayKhatib.spesialisasi}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Kanan: tabel */}
-            <div className="flex-1 p-5 overflow-x-auto">
-              <table className="w-full min-w-95 text-center text-sm">
-                <thead>
-                  <tr>
-                    <th className="text-left pb-3 pr-2 text-[11px] font-semibold text-gray-400 min-w-32.5" />
-                    {prayerColumns.map(({ label }) => (
-                      <th
-                        key={label}
-                        className="pb-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider w-14"
-                      >
-                        {label}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="space-y-1">
-                  {prayerData.map((row, i) => (
-                    <tr key={i}>
-                      <td
-                        className={`py-2.5 pr-2 text-left rounded-l-xl ${row.isActive ? "bg-amber-50" : ""}`}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <ChevronRight
-                            size={12}
-                            className={`text-amber-500 ${row.isActive ? "visible" : "invisible"}`}
-                          />
-                          <span
-                            className={`text-[12px] whitespace-nowrap ${row.isActive ? "font-semibold text-gray-800" : "text-gray-500"}`}
-                          >
-                            {row.date}
-                          </span>
-                        </div>
-                      </td>
-                      {prayerColumns.map(({ key }, j) => (
-                        <td
-                          key={key}
-                          className={[
-                            "py-2.5 w-14 text-[12px]",
-                            row.isActive ? "bg-amber-50" : "",
-                            j === prayerColumns.length - 1
-                              ? "rounded-r-xl"
-                              : "",
-                            row.isActive && key === row.activeCol
-                              ? "font-bold text-amber-600"
-                              : "font-medium text-gray-600",
-                          ].join(" ")}
-                        >
-                          {row[key]}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+      <JadwalSholatClient
+        prayerData={prayerData}
+        khutbahLabel={khutbahLabel}
+        fridayKhatib={fridayKhatib}
+      />
 
       {/* ══ PROFIL ══ */}
       <section id="profil" className="px-4 py-16">
