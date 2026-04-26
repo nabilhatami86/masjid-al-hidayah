@@ -77,7 +77,7 @@ export default function JadwalSholatClient({
   const row = prayerData[activeDay] ?? prayerData[0];
 
   return (
-    <div className="relative z-10 -mt-16 px-4 mb-8">
+    <div className="relative z-10 -mt-27 px-4 mb-8">
       <div
         className={`max-w-4xl mx-auto rounded-2xl overflow-hidden transition-all duration-700 ${
           mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
