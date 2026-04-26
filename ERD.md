@@ -193,78 +193,65 @@ Menyimpan URL gambar QRIS donasi masjid. Data dikelola admin dan ditampilkan di 
 
 ## Flowchart Alur Sistem
 
-### 1. Alur Akses & Autentikasi
+### 1. Alur Akses Website
 
 ```mermaid
 flowchart TD
-    subgraph PUBLIK["👥 Pengguna Publik"]
-        P1([Buka Website]) --> P2{Pilih Halaman}
-        P2 -- Beranda --> P3[Info Masjid & Jadwal Sholat]
+    subgraph PUBLIK["👥 Pengunjung"]
+        P1([Buka Website]) --> P2{Pilih Menu}
+        P2 -- Beranda --> P3[Lihat Info Masjid & Jadwal Sholat]
         P2 -- Jadwal Kegiatan --> P4[Lihat Jadwal Kegiatan]
         P2 -- Laporan Keuangan --> P5[Lihat Laporan Keuangan]
-        P2 -- Donasi / Wakaf --> P6[Lihat QRIS & No. Rekening]
+        P2 -- Donasi / Wakaf --> P6[Lihat Info Donasi]
     end
 
     subgraph ADMIN["👤 Admin"]
-        A1([Buka /admin]) --> A2{Sudah Login?}
-        A2 -- Belum --> A3[Redirect ke /admin/login]
-        A3 --> A4[Masukkan Email & Password]
-        A4 --> A5{Kredensial Valid?}
-        A5 -- Tidak --> A6[Tampil Pesan Error]
-        A6 --> A4
-        A5 -- Ya --> A7[Simpan Session Supabase Auth]
-        A7 --> A8[Dashboard Admin]
-        A2 -- Sudah --> A8
-        A8 --> A9{Pilih Modul}
-        A9 -- Khatib --> A10[/admin/khatib]
-        A9 -- Jadwal --> A11[/admin/jadwal]
-        A9 -- Keuangan --> A12[/admin/keuangan]
-        A9 -- Rekening & QRIS --> A13[/admin/rekening]
+        A1([Buka Halaman Admin]) --> A2{Sudah Login?}
+        A2 -- Belum --> A3[Masukkan Email & Password]
+        A3 --> A4{Akun Benar?}
+        A4 -- Tidak --> A5[Tampil Pesan Gagal]
+        A5 --> A3
+        A4 -- Ya --> A6[Masuk ke Dasbor Admin]
+        A2 -- Sudah --> A6
+        A6 --> A7{Pilih Menu}
+        A7 -- Data Khatib --> A8[Kelola Data Khatib]
+        A7 -- Jadwal --> A9[Kelola Jadwal Kegiatan]
+        A7 -- Keuangan --> A10[Catat Transaksi]
+        A7 -- Rekening & QRIS --> A11[Kelola Info Donasi]
     end
 ```
 
 ---
 
-### 2. Alur Khatib
+### 2. Alur Data Khatib
 
 ```mermaid
 flowchart TD
-    subgraph ADMIN["👤 Admin — /admin/khatib"]
-        A1([Buka Halaman Khatib]) --> A2{Pilih Aksi}
+    subgraph ADMIN["👤 Admin"]
+        A1([Buka Data Khatib]) --> A2{Pilih Aksi}
 
-        A2 -- Tambah --> A3[Isi Form: Nama, Gelar\nSpesialisasi, No HP, Email]
-        A3 --> A4[Upload Foto ke Storage]
-        A4 --> A5{Data Valid?}
-        A5 -- Tidak --> A6[Tampil Error]
-        A6 --> A3
-        A5 -- Ya --> A7[POST /api/khatib]
+        A2 -- Tambah --> A3[Isi Nama, Gelar, Bidang\nNo HP, Email, Foto]
+        A3 --> A4{Data Sudah Lengkap?}
+        A4 -- Belum --> A5[Lengkapi Data]
+        A5 --> A3
+        A4 -- Ya --> A6[Simpan Data Khatib]
 
-        A2 -- Edit --> A8[Ubah Data Khatib]
-        A8 --> A9{Data Valid?}
-        A9 -- Tidak --> A10[Tampil Error]
-        A10 --> A8
-        A9 -- Ya --> A11[PATCH /api/khatib/:id]
+        A2 -- Ubah --> A7[Edit Data Khatib]
+        A7 --> A8[Simpan Perubahan]
 
-        A2 -- Hapus --> A12{Konfirmasi?}
-        A12 -- Batal --> A2
-        A12 -- Ya --> A13[DELETE /api/khatib/:id]
+        A2 -- Hapus --> A9{Yakin Hapus?}
+        A9 -- Batal --> A2
+        A9 -- Ya --> A10[Hapus Data Khatib]
+        A10 --> A11[Nama khatib di jadwal\notomatis dikosongkan]
     end
 
-    subgraph DB["🗄️ Database"]
-        D1[(Tabel KHATIB)]
-        D2[(Tabel JADWAL\nkhatib_id = NULL\nON DELETE SET NULL)]
+    subgraph PUBLIK["👥 Pengunjung"]
+        P1([Buka Jadwal Kegiatan]) --> P2[Lihat Jadwal\nbeserta Nama Khatib]
     end
 
-    subgraph PUBLIK["👥 Publik — Halaman Jadwal"]
-        P1([Buka Jadwal Kegiatan]) --> P2[GET /api/jadwal]
-        P2 --> P3[Tampil Nama Khatib\ndi setiap jadwal]
-    end
-
-    A7 --> D1
-    A11 --> D1
-    A13 --> D1
-    A13 --> D2
-    D1 --> P2
+    A6 --> P2
+    A8 --> P2
+    A11 --> P2
 ```
 
 ---
@@ -273,48 +260,37 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph ADMIN["👤 Admin — /admin/jadwal"]
-        A1([Buka Halaman Jadwal]) --> A2{Pilih Aksi}
+    subgraph ADMIN["👤 Admin"]
+        A1([Buka Jadwal]) --> A2{Pilih Aksi}
 
-        A2 -- Tambah --> A3[Isi Form: Tanggal, Jenis Kegiatan\nWaktu, Topik, Keterangan]
+        A2 -- Tambah --> A3[Isi Tanggal, Jenis Kegiatan\nWaktu, Topik, Keterangan]
         A3 --> A4{Ada Khatib?}
-        A4 -- Ya --> A5[Pilih dari Daftar KHATIB Aktif]
-        A5 --> A6{Data Valid?}
+        A4 -- Ya --> A5[Pilih Nama Khatib]
+        A5 --> A6{Data Sudah Lengkap?}
         A4 -- Tidak --> A6
-        A6 -- Tidak --> A7[Tampil Error]
+        A6 -- Belum --> A7[Lengkapi Data]
         A7 --> A3
-        A6 -- Ya --> A8[POST /api/jadwal]
+        A6 -- Ya --> A8[Simpan Jadwal]
 
-        A2 -- Edit --> A9[Ubah Data Jadwal]
-        A9 --> A10{Data Valid?}
-        A10 -- Tidak --> A11[Tampil Error]
-        A11 --> A9
-        A10 -- Ya --> A12[PATCH /api/jadwal/:id]
+        A2 -- Ubah --> A9[Edit Data Jadwal]
+        A9 --> A10[Simpan Perubahan]
 
-        A2 -- Hapus --> A13{Konfirmasi?}
-        A13 -- Batal --> A2
-        A13 -- Ya --> A14[DELETE /api/jadwal/:id]
+        A2 -- Hapus --> A11{Yakin Hapus?}
+        A11 -- Batal --> A2
+        A11 -- Ya --> A12[Hapus Jadwal]
     end
 
-    subgraph DB["🗄️ Database"]
-        D1[(Tabel JADWAL)]
-        D2[(Tabel KHATIB)]
-        D2 -. join khatib_id .-> D1
+    subgraph PUBLIK["👥 Pengunjung"]
+        P1([Buka Jadwal Kegiatan]) --> P2{Tampilan}
+        P2 -- Semua --> P3[Lihat Seluruh Jadwal]
+        P2 -- Bulan Ini --> P4[Lihat Jadwal Bulan Ini]
+        P3 --> P5[Tanggal, Waktu, Jenis\nTopik, Nama Khatib]
+        P4 --> P5
     end
 
-    subgraph PUBLIK["👥 Publik — Halaman Jadwal"]
-        P1([Buka Jadwal Kegiatan]) --> P2[GET /api/jadwal]
-        P2 --> P3{Filter Tampilan}
-        P3 -- Semua --> P4[Tampil Semua Jadwal]
-        P3 -- Per Bulan --> P5[Tampil Jadwal Bulan Ini]
-        P4 --> P6[Detail: Tanggal, Waktu\nJenis, Topik, Nama Khatib]
-        P5 --> P6
-    end
-
-    A8 --> D1
-    A12 --> D1
-    A14 --> D1
-    D1 --> P2
+    A8 --> P1
+    A10 --> P1
+    A12 --> P1
 ```
 
 ---
@@ -323,42 +299,41 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph ADMIN["👤 Admin — /admin/keuangan"]
-        A1([Buka Halaman Keuangan]) --> A2[Lihat Daftar Transaksi & Saldo]
+    subgraph ADMIN["👤 Admin"]
+        A1([Buka Keuangan]) --> A2[Lihat Daftar Transaksi & Saldo]
         A2 --> A3{Pilih Aksi}
 
-        A3 -- Tambah --> A4[Isi Form: Tanggal, Keterangan\nJumlah, Jenis, Kategori]
-        A4 --> A5{Jenis Transaksi}
-        A5 -- Masuk --> A6[Kategori: Infaq Jumat / Kotak Amal\nDonasi Transfer / Wakaf / Zakat]
-        A5 -- Keluar --> A7[Kategori: Listrik & Air / Kebersihan\nOperasional / Kajian / Pembangunan]
-        A6 --> A8{Data Valid?}
-        A7 --> A8
-        A8 -- Tidak --> A9[Tampil Error]
-        A9 --> A4
-        A8 -- Ya --> A10[POST /api/transaksi]
+        A3 -- Catat Pemasukan --> A4[Isi Tanggal, Keterangan, Jumlah]
+        A4 --> A5[Pilih Kategori:\nInfaq Jumat / Kotak Amal\nDonasi Transfer / Wakaf / Zakat]
+        A5 --> A6{Data Sudah Lengkap?}
+        A6 -- Belum --> A7[Lengkapi Data]
+        A7 --> A4
+        A6 -- Ya --> A8[Simpan Pemasukan]
 
-        A3 -- Hapus --> A11{Konfirmasi?}
-        A11 -- Batal --> A2
-        A11 -- Ya --> A12[DELETE /api/transaksi/:id]
+        A3 -- Catat Pengeluaran --> A9[Isi Tanggal, Keterangan, Jumlah]
+        A9 --> A10[Pilih Kategori:\nListrik & Air / Kebersihan\nOperasional / Kajian / Pembangunan]
+        A10 --> A11{Data Sudah Lengkap?}
+        A11 -- Belum --> A12[Lengkapi Data]
+        A12 --> A9
+        A11 -- Ya --> A13[Simpan Pengeluaran]
+
+        A3 -- Hapus --> A14{Yakin Hapus?}
+        A14 -- Batal --> A2
+        A14 -- Ya --> A15[Hapus Transaksi]
     end
 
-    subgraph DB["🗄️ Database"]
-        D1[(Tabel TRANSAKSI)]
+    subgraph PUBLIK["👥 Pengunjung"]
+        P1([Buka Laporan Keuangan]) --> P2[Lihat Total Pemasukan\nTotal Pengeluaran & Saldo]
+        P2 --> P3{Filter}
+        P3 -- Per Bulan --> P4[Laporan Bulanan]
+        P3 -- Per Kategori --> P5[Rincian per Kategori]
+        P4 --> P6[Tampil Laporan Lengkap]
+        P5 --> P6
     end
 
-    subgraph PUBLIK["👥 Publik — /laporan-keuangan"]
-        P1([Buka Laporan Keuangan]) --> P2[GET /api/transaksi]
-        P2 --> P3[Hitung: Total Masuk\nTotal Keluar, Saldo]
-        P3 --> P4{Filter Laporan}
-        P4 -- Per Bulan --> P5[Grafik & Tabel Bulanan]
-        P4 -- Per Kategori --> P6[Rincian per Kategori]
-        P5 --> P7[Tampil Laporan Lengkap]
-        P6 --> P7
-    end
-
-    A10 --> D1
-    A12 --> D1
-    D1 --> P2
+    A8 --> P1
+    A13 --> P1
+    A15 --> P1
 ```
 
 ---
@@ -367,50 +342,40 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph ADMIN["👤 Admin — /admin/rekening"]
-        A1([Buka Halaman Rekening]) --> A2{Pilih Aksi}
+    subgraph ADMIN["👤 Admin"]
+        A1([Buka Rekening & QRIS]) --> A2{Pilih Aksi}
 
-        A2 -- Tambah Rekening --> A3[Isi Form: Bank, No Rekening\nNama Pemilik, Urutan Tampil]
-        A3 --> A4{Data Valid?}
-        A4 -- Tidak --> A5[Tampil Error]
+        A2 -- Tambah Rekening --> A3[Isi Nama Bank\nNo Rekening, Nama Pemilik]
+        A3 --> A4{Data Sudah Lengkap?}
+        A4 -- Belum --> A5[Lengkapi Data]
         A5 --> A3
-        A4 -- Ya --> A6[POST /api/rekening]
+        A4 -- Ya --> A6[Simpan Rekening]
 
-        A2 -- Edit Rekening --> A7[Ubah Data Rekening]
-        A7 --> A8[PATCH /api/rekening/:id]
+        A2 -- Ubah Rekening --> A7[Edit Data Rekening]
+        A7 --> A8[Simpan Perubahan]
 
-        A2 -- Toggle Aktif/Nonaktif --> A9[PATCH aktif = true / false]
+        A2 -- Aktifkan / Nonaktifkan --> A9[Rekening tampil\natau disembunyikan dari publik]
 
-        A2 -- Hapus --> A10{Konfirmasi?}
+        A2 -- Hapus Rekening --> A10{Yakin Hapus?}
         A10 -- Batal --> A2
-        A10 -- Ya --> A11[DELETE /api/rekening/:id]
+        A10 -- Ya --> A11[Hapus Rekening]
 
-        A2 -- Upload QRIS --> A12[Pilih File Gambar]
-        A12 --> A13[Upload ke Storage bucket qris]
-        A13 --> A14[Dapatkan Public URL]
-        A14 --> A15[PATCH /api/pengaturan\nkey = qris_url]
+        A2 -- Ganti Gambar QRIS --> A12[Pilih & Unggah\nGambar QRIS Baru]
+        A12 --> A13[Gambar QRIS Tersimpan]
     end
 
-    subgraph DB["🗄️ Database"]
-        D1[(Tabel REKENING\naktif = true/false)]
-        D2[(Tabel QRIS_DONASI\nkey = qris_url)]
+    subgraph PUBLIK["👥 Pengunjung"]
+        P1([Buka Halaman Donasi]) --> P2[Lihat Daftar Rekening Aktif]
+        P1 --> P3[Lihat Gambar QRIS]
+        P2 --> P4[Salin Nomor Rekening]
+        P3 --> P5[Scan & Transfer via QRIS]
     end
 
-    subgraph PUBLIK["👥 Publik — Halaman Donasi / Wakaf"]
-        P1([Buka Halaman Donasi]) --> P2[GET /api/rekening\nhanya aktif = true]
-        P1 --> P3[GET /api/pengaturan?key=qris_url]
-        P2 --> P4[Tampil Daftar Rekening\nUrut sesuai kolom urutan]
-        P3 --> P5[Tampil Gambar QRIS]
-        P4 --> P6[Tombol Salin No. Rekening]
-    end
-
-    A6 --> D1
-    A8 --> D1
-    A9 --> D1
-    A11 --> D1
-    A15 --> D2
-    D1 --> P2
-    D2 --> P3
+    A6 --> P2
+    A8 --> P2
+    A9 --> P2
+    A11 --> P2
+    A13 --> P3
 ```
 
 ---
