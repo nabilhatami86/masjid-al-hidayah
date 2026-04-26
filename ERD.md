@@ -191,6 +191,181 @@ Menyimpan URL gambar QRIS donasi masjid. Data dikelola admin dan ditampilkan di 
 
 ---
 
+## Flowchart Alur Sistem
+
+### 1. Alur Autentikasi Admin
+
+```mermaid
+flowchart TD
+    A([Mulai]) --> B[Buka /admin/login]
+    B --> C[Masukkan Email & Password]
+    C --> D{Kredensial Valid?}
+    D -- Tidak --> E[Tampil Pesan Error]
+    E --> C
+    D -- Ya --> F[Simpan Session Supabase Auth]
+    F --> G[Redirect ke /admin/dashboard]
+    G --> H([Selesai])
+```
+
+---
+
+### 2. Alur Manajemen Khatib
+
+```mermaid
+flowchart TD
+    A([Admin di /admin/khatib]) --> B[Lihat Daftar Khatib]
+
+    B --> C{Pilih Aksi}
+
+    C -- Tambah --> D[Isi Form: Nama, Gelar, Spesialisasi\nNo HP, Email, Upload Foto]
+    D --> E{Data Valid?}
+    E -- Tidak --> F[Tampil Validasi Error]
+    F --> D
+    E -- Ya --> G[POST /api/khatib]
+    G --> H[Simpan ke tabel KHATIB]
+    H --> I[Refresh Daftar]
+
+    C -- Edit --> J[Isi Form dengan Data Lama]
+    J --> K{Data Valid?}
+    K -- Tidak --> L[Tampil Validasi Error]
+    L --> J
+    K -- Ya --> M[PATCH /api/khatib/:id]
+    M --> N[Update tabel KHATIB]
+    N --> I
+
+    C -- Hapus --> O{Konfirmasi Hapus?}
+    O -- Batal --> B
+    O -- Ya --> P[DELETE /api/khatib/:id]
+    P --> Q[Set khatib_id = NULL di JADWAL\nON DELETE SET NULL]
+    Q --> R[Hapus record dari KHATIB]
+    R --> I
+
+    I --> B
+```
+
+---
+
+### 3. Alur Manajemen Jadwal
+
+```mermaid
+flowchart TD
+    A([Admin di /admin/jadwal]) --> B[Lihat Daftar Jadwal]
+
+    B --> C{Pilih Aksi}
+
+    C -- Tambah --> D[Isi Form: Tanggal, Jenis Kegiatan\nWaktu, Topik, Keterangan]
+    D --> E{Pilih Khatib?}
+    E -- Ya --> F[Pilih dari Daftar KHATIB Aktif]
+    F --> G{Data Valid?}
+    E -- Tidak --> G
+    G -- Tidak --> H[Tampil Validasi Error]
+    H --> D
+    G -- Ya --> I[POST /api/jadwal]
+    I --> J[Simpan ke tabel JADWAL]
+    J --> K[Refresh Daftar]
+
+    C -- Edit --> L[Isi Form dengan Data Lama]
+    L --> M{Data Valid?}
+    M -- Tidak --> N[Tampil Validasi Error]
+    N --> L
+    M -- Ya --> O[PATCH /api/jadwal/:id]
+    O --> P[Update tabel JADWAL]
+    P --> K
+
+    C -- Hapus --> Q{Konfirmasi Hapus?}
+    Q -- Batal --> B
+    Q -- Ya --> R[DELETE /api/jadwal/:id]
+    R --> S[Hapus record dari JADWAL]
+    S --> K
+
+    K --> B
+```
+
+---
+
+### 4. Alur Keuangan (Transaksi)
+
+```mermaid
+flowchart TD
+    A([Admin di /admin/keuangan]) --> B[Lihat Daftar Transaksi\nRingkasan Saldo]
+
+    B --> C{Pilih Aksi}
+
+    C -- Tambah --> D[Isi Form: Tanggal, Keterangan\nKategori, Jenis, Jumlah]
+    D --> E{Jenis Transaksi}
+    E -- Masuk --> F[Pilih Kategori Pemasukan\nInfoq Jumat / Kotak Amal / Donasi Transfer / Wakaf / Zakat]
+    E -- Keluar --> G[Pilih Kategori Pengeluaran\nListrik & Air / Kebersihan / Operasional / Kajian / Pembangunan]
+    F --> H{Data Valid?}
+    G --> H
+    H -- Tidak --> I[Tampil Validasi Error]
+    I --> D
+    H -- Ya --> J[POST /api/transaksi]
+    J --> K[Simpan ke tabel TRANSAKSI]
+    K --> L[Hitung Ulang Saldo]
+    L --> M[Refresh Daftar]
+
+    C -- Hapus --> N{Konfirmasi Hapus?}
+    N -- Batal --> B
+    N -- Ya --> O[DELETE /api/transaksi/:id]
+    O --> P[Hapus record dari TRANSAKSI]
+    P --> L
+
+    M --> B
+
+    B --> Q[Publik: Akses /laporan-keuangan]
+    Q --> R[GET /api/transaksi]
+    R --> S[Tampil Laporan: Saldo, Pemasukan\nPengeluaran per Kategori & Periode]
+```
+
+---
+
+### 5. Alur Donasi & Rekening
+
+```mermaid
+flowchart TD
+    A([Admin di /admin/rekening]) --> B[Lihat Daftar Rekening & QRIS]
+
+    B --> C{Pilih Aksi}
+
+    C -- Tambah Rekening --> D[Isi Form: Bank, No Rekening\nNama Pemilik, Urutan Tampil]
+    D --> E{Data Valid?}
+    E -- Tidak --> F[Tampil Validasi Error]
+    F --> D
+    E -- Ya --> G[POST /api/rekening]
+    G --> H[Simpan ke tabel REKENING]
+    H --> I[Refresh Daftar]
+
+    C -- Edit Rekening --> J[Edit Data Rekening]
+    J --> K[PATCH /api/rekening/:id]
+    K --> L[Update tabel REKENING]
+    L --> I
+
+    C -- Toggle Aktif --> M[PATCH aktif = true/false]
+    M --> I
+
+    C -- Hapus Rekening --> N{Konfirmasi?}
+    N -- Batal --> B
+    N -- Ya --> O[DELETE /api/rekening/:id]
+    O --> I
+
+    C -- Upload QRIS --> P[Pilih File Gambar QRIS]
+    P --> Q[Upload ke Supabase Storage bucket qris]
+    Q --> R[Dapatkan Public URL]
+    R --> S[PATCH /api/pengaturan key=qris_url]
+    S --> T[Update tabel QRIS_DONASI]
+    T --> I
+
+    I --> B
+
+    B --> U[Publik: Akses Halaman Donasi]
+    U --> V[GET /api/rekening — hanya aktif=true]
+    U --> W[GET /api/pengaturan?key=qris_url]
+    V --> X[Tampil Nomor Rekening & Tombol Salin]
+    W --> Y[Tampil Gambar QRIS]
+```
+
+---
+
 ## Keamanan Data (Row Level Security)
 
 Semua tabel menggunakan Row Level Security (RLS) Supabase.
