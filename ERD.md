@@ -47,7 +47,7 @@ erDiagram
         boolean aktif   "default: true"
     }
 
-    PENGATURAN {
+    QRIS_DONASI {
         text key   PK "Primary Key — nama setting"
         text value "nullable — nilai setting"
     }
@@ -122,14 +122,14 @@ Menyimpan nomor rekening bank untuk halaman donasi/wakaf. Data dikelola admin da
 
 ---
 
-### PENGATURAN
+### QRIS_DONASI
 
-Menyimpan pengaturan global sistem dalam format key-value. Saat ini digunakan untuk menyimpan URL gambar QRIS donasi.
+Menyimpan URL gambar QRIS donasi masjid. Data dikelola admin dan ditampilkan di halaman donasi/wakaf publik.
 
 | Kolom        | Tipe        | Keterangan                                              |
 | ------------ | ----------- | ------------------------------------------------------- |
-| `key`        | TEXT        | Primary key — nama pengaturan (contoh: `qris_url`)      |
-| `value`      | TEXT | Nilai pengaturan (nullable) |
+| `key`        | TEXT | Primary key (contoh: `qris_url`)                 |
+| `value`      | TEXT | URL gambar QRIS dari Supabase Storage (nullable) |
 
 **Contoh data:**
 
@@ -145,7 +145,7 @@ Menyimpan pengaturan global sistem dalam format key-value. Saat ini digunakan un
 | --------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | KHATIB → JADWAL | One-to-Many (opsional) | Satu khatib dapat mengisi banyak jadwal. Jika khatib dihapus, kolom `khatib_id` di jadwal menjadi NULL (ON DELETE SET NULL) |
 
-> **REKENING** dan **PENGATURAN** tidak memiliki relasi ke tabel lain — keduanya berdiri sendiri sebagai data master.
+> **REKENING** dan **QRIS_DONASI** tidak memiliki relasi ke tabel lain — keduanya berdiri sendiri sebagai data master donasi.
 
 ---
 
