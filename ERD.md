@@ -303,42 +303,72 @@ flowchart TD
         A1([Buka Keuangan]) --> A2[Lihat Daftar Transaksi & Saldo]
         A2 --> A3{Pilih Aksi}
 
-        A3 -- Catat Pemasukan --> A4[Isi Tanggal, Keterangan, Jumlah]
-        A4 --> A5[Pilih Kategori:\nInfaq Jumat / Kotak Amal\nDonasi Transfer / Wakaf / Zakat]
-        A5 --> A6{Data Sudah Lengkap?}
-        A6 -- Belum --> A7[Lengkapi Data]
-        A7 --> A4
-        A6 -- Ya --> A8[Simpan Pemasukan]
+        A3 -- Catat Donasi\nShortcut --> A4[Kategori otomatis:\nDonasi Transfer · Pemasukan]
+        A4 --> A5[Isi Nominal & Tanggal]
+        A5 --> A6[Simpan → masuk Laporan]
 
-        A3 -- Catat Pengeluaran --> A9[Isi Tanggal, Keterangan, Jumlah]
-        A9 --> A10[Pilih Kategori:\nListrik & Air / Kebersihan\nOperasional / Kajian / Pembangunan]
-        A10 --> A11{Data Sudah Lengkap?}
-        A11 -- Belum --> A12[Lengkapi Data]
-        A12 --> A9
-        A11 -- Ya --> A13[Simpan Pengeluaran]
+        A3 -- Tambah Transaksi\nManual --> A7{Pilih Jenis}
+        A7 -- Pemasukan --> A8[Pilih Kategori:\nInfaq Jumat / Kotak Amal\nDonasi Transfer / Wakaf / Zakat]
+        A7 -- Pengeluaran --> A9[Pilih Kategori:\nListrik & Air / Kebersihan\nOperasional / Kajian / Pembangunan]
+        A8 --> A10[Isi Keterangan, Jumlah, Tanggal]
+        A9 --> A10
+        A10 --> A11[Simpan Transaksi]
 
-        A3 -- Hapus --> A14{Yakin Hapus?}
-        A14 -- Batal --> A2
-        A14 -- Ya --> A15[Hapus Transaksi]
+        A3 -- Export --> A12{Format}
+        A12 -- CSV --> A13[Download .csv]
+        A12 -- Excel --> A14[Download .xlsx]
+        A12 -- Print / PDF --> A15[Buka Halaman Cetak]
+
+        A3 -- Hapus --> A16{Yakin Hapus?}
+        A16 -- Batal --> A2
+        A16 -- Ya --> A17[Hapus Transaksi]
     end
 
     subgraph PUBLIK["👥 Pengunjung"]
         P1([Buka Laporan Keuangan]) --> P2[Lihat Total Pemasukan\nTotal Pengeluaran & Saldo]
         P2 --> P3{Filter}
         P3 -- Per Bulan --> P4[Laporan Bulanan]
-        P3 -- Per Kategori --> P5[Rincian per Kategori]
+        P3 -- Per Jenis --> P5[Masuk / Keluar]
         P4 --> P6[Tampil Laporan Lengkap]
         P5 --> P6
     end
 
-    A8 --> P1
-    A13 --> P1
-    A15 --> P1
+    A6 --> P1
+    A11 --> P1
+    A17 --> P1
 ```
 
 ---
 
-### 5. Alur Donasi & Rekening
+### 5. Alur Donasi → Laporan Keuangan
+
+```mermaid
+flowchart TD
+    subgraph DONATUR["🙋 Donatur"]
+        D1([Buka Halaman Donasi]) --> D2{Pilih Metode}
+        D2 -- Transfer Bank --> D3[Lihat No. Rekening\nSalin & Transfer]
+        D2 -- QRIS --> D4[Scan QR Code\nBayar via Bank / E-Wallet]
+        D3 --> D5[Selesai ✓]
+        D4 --> D5
+    end
+
+    subgraph ADMIN["👤 Admin"]
+        D5 --> A1[Cek Notifikasi Mutasi\nRekening / Aplikasi QRIS]
+        A1 --> A2([Buka Admin Keuangan])
+        A2 --> A3[Klik Catat Donasi]
+        A3 --> A4[Isi Nominal & Tanggal\nKategori otomatis: Donasi Transfer]
+        A4 --> A5[Simpan]
+        A5 --> A6[(TRANSAKSI\nmasuk · Donasi Transfer)]
+    end
+
+    subgraph PUBLIK["👥 Pengunjung"]
+        A6 --> P1[Laporan Keuangan\ndiperbarui otomatis]
+    end
+```
+
+---
+
+### 6. Alur Kelola Rekening & QRIS
 
 ```mermaid
 flowchart TD
@@ -346,36 +376,34 @@ flowchart TD
         A1([Buka Rekening & QRIS]) --> A2{Pilih Aksi}
 
         A2 -- Tambah Rekening --> A3[Isi Nama Bank\nNo Rekening, Nama Pemilik]
-        A3 --> A4{Data Sudah Lengkap?}
-        A4 -- Belum --> A5[Lengkapi Data]
-        A5 --> A3
-        A4 -- Ya --> A6[Simpan Rekening]
+        A3 --> A4{Data Lengkap?}
+        A4 -- Belum --> A3
+        A4 -- Ya --> A5[Simpan Rekening]
 
-        A2 -- Ubah Rekening --> A7[Edit Data Rekening]
-        A7 --> A8[Simpan Perubahan]
+        A2 -- Ubah Rekening --> A6[Edit & Simpan]
 
-        A2 -- Aktifkan / Nonaktifkan --> A9[Rekening tampil\natau disembunyikan dari publik]
+        A2 -- Aktifkan / Nonaktifkan --> A7[Rekening tampil\natau disembunyikan dari publik]
 
-        A2 -- Hapus Rekening --> A10{Yakin Hapus?}
-        A10 -- Batal --> A2
-        A10 -- Ya --> A11[Hapus Rekening]
+        A2 -- Hapus Rekening --> A8{Yakin Hapus?}
+        A8 -- Batal --> A2
+        A8 -- Ya --> A9[Hapus Rekening]
 
-        A2 -- Ganti Gambar QRIS --> A12[Pilih & Unggah\nGambar QRIS Baru]
-        A12 --> A13[Gambar QRIS Tersimpan]
+        A2 -- Ganti Gambar QRIS --> A10[Pilih & Unggah Gambar]
+        A10 --> A11[QRIS Tersimpan di Storage]
     end
 
     subgraph PUBLIK["👥 Pengunjung"]
-        P1([Buka Halaman Donasi]) --> P2[Lihat Daftar Rekening Aktif]
-        P1 --> P3[Lihat Gambar QRIS]
-        P2 --> P4[Salin Nomor Rekening]
-        P3 --> P5[Scan & Transfer via QRIS]
+        P1([Buka Halaman Donasi]) --> P2[Tab Transfer:\nDaftar Rekening Aktif]
+        P1 --> P3[Tab QRIS:\nGambar QR untuk Scan]
+        P2 --> P4[Salin No. Rekening]
+        P3 --> P5[Scan & Bayar]
     end
 
+    A5 --> P2
     A6 --> P2
-    A8 --> P2
+    A7 --> P2
     A9 --> P2
-    A11 --> P2
-    A13 --> P3
+    A11 --> P3
 ```
 
 ---

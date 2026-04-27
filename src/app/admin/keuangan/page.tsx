@@ -14,9 +14,11 @@ import {
   Pencil,
   Trash2,
   AlertTriangle,
-  TrendingUp,
-  TrendingDown,
+  FileDown,
+  Printer,
+  Sheet,
 } from "lucide-react";
+import { exportCSV, exportExcel, printLaporan } from "@/lib/controllers/exportController";
 import {
   BarChart,
   Bar,
@@ -114,6 +116,17 @@ export default function KeuanganAdminPage() {
 
   function openAdd() {
     setForm(EMPTY_FORM);
+    setEditId(null);
+    setError(null);
+    setModalOpen(true);
+  }
+
+  function openDonasi() {
+    setForm({
+      ...EMPTY_FORM,
+      jenis: "masuk",
+      kategori: "Donasi Transfer",
+    });
     setEditId(null);
     setError(null);
     setModalOpen(true);
@@ -266,6 +279,18 @@ export default function KeuanganAdminPage() {
   const kategoriOpts =
     form.jenis === "masuk" ? KATEGORI_MASUK : KATEGORI_KELUAR;
 
+  function exportLabel() {
+    const bulan = filterBulan === "semua" ? "Semua Bulan" : MONTHS_ID[parseInt(filterBulan) - 1];
+    const jenis = filterJenis === "semua" ? "Semua Transaksi" : filterJenis === "masuk" ? "Pemasukan" : "Pengeluaran";
+    return `${bulan} · ${jenis}`;
+  }
+
+  function exportFilename(ext: string) {
+    const bulan = filterBulan === "semua" ? "semua" : MONTHS_ID[parseInt(filterBulan) - 1].toLowerCase();
+    const jenis = filterJenis === "semua" ? "" : `-${filterJenis}`;
+    return `laporan-keuangan-${bulan}${jenis}.${ext}`;
+  }
+
   return (
     <AdminGuard>
       <div className="flex min-h-screen bg-gray-50">
@@ -283,13 +308,51 @@ export default function KeuanganAdminPage() {
                   {loading ? "Memuat…" : `${list.length} transaksi tercatat`}
                 </p>
               </div>
-              <button
-                onClick={openAdd}
-                className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-[14px] font-semibold px-4 py-2.5 rounded-xl transition-colors shrink-0"
-              >
-                <Plus size={16} strokeWidth={2.5} />
-                Tambah Transaksi
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Export buttons */}
+                <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1">
+                  <button
+                    onClick={() => exportCSV(filtered, exportFilename("csv"))}
+                    title="Export CSV"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-gray-600 hover:bg-gray-100 transition-colors"
+                  >
+                    <FileDown size={14} strokeWidth={2} />
+                    CSV
+                  </button>
+                  <button
+                    onClick={() => exportExcel(filtered, exportLabel(), summary, exportFilename("xlsx"))}
+                    title="Export Excel"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors"
+                  >
+                    <Sheet size={14} strokeWidth={2} />
+                    Excel
+                  </button>
+                  <button
+                    onClick={() => printLaporan(filtered, exportLabel(), summary)}
+                    title="Cetak / PDF"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-blue-600 hover:bg-blue-50 transition-colors"
+                  >
+                    <Printer size={14} strokeWidth={2} />
+                    Print
+                  </button>
+                </div>
+
+                <button
+                  onClick={openDonasi}
+                  className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white text-[14px] font-semibold px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  <Plus size={16} strokeWidth={2.5} />
+                  Catat Donasi
+                </button>
+
+                <button
+                  onClick={openAdd}
+                  className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white text-[14px] font-semibold px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  <Plus size={16} strokeWidth={2.5} />
+                  Tambah Transaksi
+                </button>
+              </div>
             </div>
 
             {error && !modalOpen && (
