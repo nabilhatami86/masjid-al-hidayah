@@ -23,6 +23,7 @@ const navItems = [
   { href: "/admin/khatib",    label: "Khatib & Ustadz",  icon: Users           },
   { href: "/admin/jadwal",    label: "Jadwal Kegiatan",  icon: CalendarDays    },
   { href: "/admin/keuangan",  label: "Keuangan",         icon: Wallet          },
+  { href: "/admin/galeri",    label: "Galeri Foto",      icon: Images          },
   { href: "/admin/program",   label: "Program Unggulan", icon: Images          },
   { href: "/admin/rekening",  label: "Nomor Rekening",   icon: CreditCard      },
 ];

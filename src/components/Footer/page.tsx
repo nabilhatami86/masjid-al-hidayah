@@ -4,12 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 const menuLinks = [
-  { label: "Beranda", href: "/" },
-  { label: "Profil", href: "/#profil" },
-  { label: "Kajian", href: "/#kajian" },
-  { label: "Fasilitas", href: "/#fasilitas" },
-  { label: "Berita", href: "/#berita" },
-  { label: "Contact Us", href: "/#contact" },
+  { label: "Beranda",       href: "/"              },
+  { label: "Profil",        href: "/#profil"       },
+  { label: "Kajian",        href: "/#kajian"       },
+  { label: "Jadwal Sholat", href: "/jadwal-sholat" },
+  { label: "Laporan Keuangan", href: "/laporan-keuangan" },
 ];
 
 export default function Footer() {

@@ -10,8 +10,8 @@ const navLinks = [
   { label: "Profil", href: "/#profil" },
   { label: "Kajian", href: "/#kajian" },
   { label: "Fasilitas", href: "/#fasilitas" },
-  { label: "Berita", href: "/#berita" },
-  { label: "Contact Us", href: "/#contact" },
+  { label: "Jadwal Sholat", href: "/jadwal-sholat" },
+  { label: "Kontak", href: "/#contact" },
 ];
 
 export default function Sidebar() {
@@ -19,8 +19,9 @@ export default function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   function isActive(href: string) {
+    if (href.includes("#")) return false; // anchor links are never active
     if (href === "/") return pathname === "/";
-    return pathname === href.split("#")[0];
+    return pathname === href;
   }
 
   return (
@@ -52,11 +53,7 @@ export default function Sidebar() {
             <li key={link.label}>
               <Link
                 href={link.href}
-                className={`text-[13.5px] font-medium transition-colors ${
-                  isActive(link.href)
-                    ? "text-amber-600 font-semibold"
-                    : "text-gray-700 hover:text-amber-600"
-                }`}
+                className="text-[13.5px] font-medium text-amber-600 hover:text-amber-700 transition-colors"
               >
                 {link.label}
               </Link>
@@ -64,7 +61,7 @@ export default function Sidebar() {
           ))}
         </ul>
 
-        {/* Kanan: Laporan Keuangan + Hamburger */}
+        {/* Kanan: Laporan Keuangan*/}
         <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/laporan-keuangan"
@@ -77,7 +74,7 @@ export default function Sidebar() {
             Laporan Keuangan
           </Link>
 
-          {/* Hamburger – mobile */}
+          {/* Hamburger */}
           <button
             className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer"
             onClick={() => setIsOpen((prev) => !prev)}

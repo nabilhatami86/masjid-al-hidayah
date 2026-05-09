@@ -1,19 +1,8 @@
 import { MONTHS_ID, MONTHS_FULL } from "./constants";
 import type { Transaksi, MonthlyEntry, PieEntry, Summary } from "./types";
 
-export function rupiah(n: number) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(n);
-}
-
-export function rupiahShort(n: number) {
-  if (n >= 1_000_000) return `Rp${(n / 1_000_000).toFixed(1)}jt`;
-  if (n >= 1_000)     return `Rp${(n / 1_000).toFixed(0)}rb`;
-  return `Rp${n}`;
-}
+// re-export dari @/lib/format agar import lama tetap bekerja
+export { rupiah, rupiahShort } from "@/lib/format";
 
 export function computeSummary(list: Transaksi[]): Summary {
   let masuk = 0, keluar = 0;
