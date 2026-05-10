@@ -9,15 +9,15 @@ interface Props {
 
 export default function JadwalKegiatanSection({ events }: Props) {
   return (
-    <section id="kajian" className="px-4 py-16 bg-white">
+    <section id="kajian" className="px-4 py-16 bg-[#F5F3EE]">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-end justify-between mb-10">
           <SectionHeader label="Agenda Masjid" title="Jadwal Kegiatan" />
           <Link
-            href="/laporan-keuangan"
+            href="/jadwal-kegiatan"
             className="text-[13px] text-amber-600 font-semibold hover:underline hidden sm:block"
           >
-            Laporan Keuangan →
+            Lihat semua →
           </Link>
         </div>
 
@@ -54,6 +54,12 @@ export default function JadwalKegiatanSection({ events }: Props) {
             </div>
           ))}
         </div>
+
+        {events.length === 0 && (
+          <div className="col-span-3 text-center py-12 text-[13px] text-gray-400 bg-gray-50 rounded-2xl border border-gray-100">
+            Belum ada jadwal kegiatan yang tersedia.
+          </div>
+        )}
 
         <p className="text-center text-[12px] text-gray-400 mt-6">
           Jadwal dapat berubah sewaktu-waktu · Pantau pengumuman di masjid

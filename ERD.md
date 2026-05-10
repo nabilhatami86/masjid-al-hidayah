@@ -2,7 +2,7 @@
 
 **Lokasi:** Ketintang Baru XV No.20, Kec. Gayungan, Surabaya
 **Database:** PostgreSQL (Supabase)
-**Dibuat:** April 2026
+**Diperbarui:** Mei 2026
 
 ---
 
@@ -47,9 +47,33 @@ erDiagram
         boolean aktif   "default: true"
     }
 
-    QRIS_DONASI {
+    PENGATURAN {
         text key   PK "Primary Key — nama setting"
         text value "nullable — nilai setting"
+    }
+
+    BERITA {
+        uuid id         PK "Primary Key"
+        text slug       "UNIQUE NOT NULL — URL-friendly"
+        text judul      "NOT NULL"
+        text ringkasan  "default: kosong"
+        text konten     "default: kosong — isi artikel"
+        text kategori   "default: Pengumuman"
+        date tanggal    "NOT NULL default: today"
+    }
+
+    GALERI {
+        uuid id        PK "Primary Key"
+        text judul     "NOT NULL"
+        text deskripsi "default: kosong"
+        text image_url "NOT NULL — URL dari Storage"
+        text kategori  "default: Kegiatan"
+        date tanggal   "NOT NULL default: today"
+    }
+
+    PROGRAM_IMAGES {
+        text key       PK "Primary Key — slug program"
+        text image_url "nullable — URL dari Storage"
     }
 
     KHATIB ||--o{ JADWAL : "mengisi"
@@ -63,16 +87,16 @@ erDiagram
 
 Menyimpan data penceramah/khatib yang terdaftar di masjid.
 
-| Kolom          | Tipe       | Keterangan                                |
-| -------------- | ---------- | ----------------------------------------- |
-| `id`           | UUID       | Primary key, di-generate otomatis         |
-| `nama`         | TEXT       | Nama lengkap khatib                       |
-| `gelar`        | TEXT       | Gelar akademik (contoh: Lc., M.A.)        |
-| `spesialisasi` | TEXT       | Bidang keahlian (contoh: Tafsir & Hadist) |
-| `no_hp`        | TEXT       | Nomor handphone                           |
-| `email`        | TEXT       | Alamat email                              |
+| Kolom          | Tipe    | Keterangan                                |
+| -------------- | ------- | ----------------------------------------- |
+| `id`           | UUID    | Primary key, di-generate otomatis         |
+| `nama`         | TEXT    | Nama lengkap khatib                       |
+| `gelar`        | TEXT    | Gelar akademik (contoh: Lc., M.A.)        |
+| `spesialisasi` | TEXT    | Bidang keahlian (contoh: Tafsir & Hadist) |
+| `no_hp`        | TEXT    | Nomor handphone                           |
+| `email`        | TEXT    | Alamat email                              |
 | `aktif`        | BOOLEAN | Status aktif/tidak aktif                  |
-| `foto_url`     | TEXT    | URL foto dari storage (opsional)          |
+| `foto_url`     | TEXT    | URL foto dari Storage (opsional)          |
 
 ---
 
@@ -80,15 +104,15 @@ Menyimpan data penceramah/khatib yang terdaftar di masjid.
 
 Menyimpan jadwal kegiatan masjid (khutbah, kajian, TPA, dll).
 
-| Kolom            | Tipe        | Keterangan                                 |
-| ---------------- | ----------- | ------------------------------------------ |
-| `id`             | UUID        | Primary key, di-generate otomatis          |
-| `tanggal`        | DATE        | Tanggal kegiatan (YYYY-MM-DD)              |
-| `jenis_kegiatan` | TEXT        | Jenis kegiatan (lihat enum di bawah)       |
-| `khatib_id`      | UUID        | Foreign key ke tabel KHATIB (boleh kosong) |
-| `topik`          | TEXT        | Topik/tema kegiatan                        |
-| `waktu`          | TEXT        | Jam kegiatan format HH:MM                  |
-| `keterangan`     | TEXT | Catatan tambahan |
+| Kolom            | Tipe | Keterangan                                 |
+| ---------------- | ---- | ------------------------------------------ |
+| `id`             | UUID | Primary key, di-generate otomatis          |
+| `tanggal`        | DATE | Tanggal kegiatan (YYYY-MM-DD)              |
+| `jenis_kegiatan` | TEXT | Jenis kegiatan (lihat enum di bawah)       |
+| `khatib_id`      | UUID | Foreign key ke tabel KHATIB (boleh kosong) |
+| `topik`          | TEXT | Topik/tema kegiatan                        |
+| `waktu`          | TEXT | Jam kegiatan format HH:MM                  |
+| `keterangan`     | TEXT | Catatan tambahan                           |
 
 ---
 
@@ -96,40 +120,40 @@ Menyimpan jadwal kegiatan masjid (khutbah, kajian, TPA, dll).
 
 Menyimpan seluruh transaksi keuangan masjid (pemasukan & pengeluaran).
 
-| Kolom        | Tipe        | Keterangan                                  |
-| ------------ | ----------- | ------------------------------------------- |
-| `id`         | UUID        | Primary key, di-generate otomatis           |
-| `tanggal`    | DATE        | Tanggal transaksi (YYYY-MM-DD)              |
-| `keterangan` | TEXT        | Deskripsi transaksi                         |
-| `kategori`   | TEXT        | Kategori transaksi (lihat enum di bawah)    |
-| `jenis`      | TEXT        | `masuk` = pemasukan, `keluar` = pengeluaran |
-| `jumlah`     | BIGINT | Nominal dalam Rupiah (harus > 0) |
+| Kolom        | Tipe   | Keterangan                                  |
+| ------------ | ------ | ------------------------------------------- |
+| `id`         | UUID   | Primary key, di-generate otomatis           |
+| `tanggal`    | DATE   | Tanggal transaksi (YYYY-MM-DD)              |
+| `keterangan` | TEXT   | Deskripsi transaksi                         |
+| `kategori`   | TEXT   | Kategori transaksi (lihat enum di bawah)    |
+| `jenis`      | TEXT   | `masuk` = pemasukan, `keluar` = pengeluaran |
+| `jumlah`     | BIGINT | Nominal dalam Rupiah (harus > 0)            |
 
 ---
 
 ### REKENING
 
-Menyimpan nomor rekening bank untuk halaman donasi/wakaf. Data dikelola admin dan ditampilkan secara live di halaman publik.
+Menyimpan nomor rekening bank untuk halaman donasi/wakaf.
 
-| Kolom        | Tipe        | Keterangan                                        |
-| ------------ | ----------- | ------------------------------------------------- |
-| `id`         | UUID        | Primary key, di-generate otomatis                 |
-| `bank`       | TEXT        | Nama bank (contoh: BSI, Mandiri Syariah)          |
-| `norek`      | TEXT        | Nomor rekening                                    |
-| `atas`       | TEXT        | Nama pemilik rekening                             |
-| `urutan`     | INTEGER     | Urutan tampil di halaman (angka kecil = atas)     |
-| `aktif`      | BOOLEAN | Jika false, rekening disembunyikan dari publik |
+| Kolom    | Tipe    | Keterangan                                    |
+| -------- | ------- | --------------------------------------------- |
+| `id`     | UUID    | Primary key, di-generate otomatis             |
+| `bank`   | TEXT    | Nama bank (contoh: BSI, Mandiri Syariah)      |
+| `norek`  | TEXT    | Nomor rekening                                |
+| `atas`   | TEXT    | Nama pemilik rekening                         |
+| `urutan` | INTEGER | Urutan tampil di halaman (angka kecil = atas) |
+| `aktif`  | BOOLEAN | Jika false, rekening disembunyikan dari publik |
 
 ---
 
-### QRIS_DONASI
+### PENGATURAN
 
-Menyimpan URL gambar QRIS donasi masjid. Data dikelola admin dan ditampilkan di halaman donasi/wakaf publik.
+Menyimpan konfigurasi global sistem (key-value). Saat ini digunakan untuk URL gambar QRIS.
 
-| Kolom        | Tipe        | Keterangan                                              |
-| ------------ | ----------- | ------------------------------------------------------- |
-| `key`        | TEXT | Primary key (contoh: `qris_url`)                 |
-| `value`      | TEXT | URL gambar QRIS dari Supabase Storage (nullable) |
+| Kolom   | Tipe | Keterangan                                    |
+| ------- | ---- | --------------------------------------------- |
+| `key`   | TEXT | Primary key (contoh: `qris_url`)              |
+| `value` | TEXT | Nilai setting, misal URL gambar QRIS (nullable) |
 
 **Contoh data:**
 
@@ -139,13 +163,64 @@ Menyimpan URL gambar QRIS donasi masjid. Data dikelola admin dan ditampilkan di 
 
 ---
 
+### BERITA
+
+Menyimpan artikel berita dan pengumuman yang dikelola admin dan ditampilkan di halaman publik.
+
+| Kolom       | Tipe | Keterangan                                                    |
+| ----------- | ---- | ------------------------------------------------------------- |
+| `id`        | UUID | Primary key, di-generate otomatis                             |
+| `slug`      | TEXT | URL-friendly identifier, unik (contoh: `kajian-sabtu-mei-2026`) |
+| `judul`     | TEXT | Judul berita/pengumuman                                       |
+| `ringkasan` | TEXT | Ringkasan singkat untuk preview card                          |
+| `konten`    | TEXT | Isi artikel lengkap (paragraf dipisah dengan baris kosong)    |
+| `kategori`  | TEXT | Pengumuman / Kajian / Pendidikan / Infrastruktur / Sosial / Renovasi |
+| `tanggal`   | DATE | Tanggal publikasi (YYYY-MM-DD)                                |
+
+---
+
+### GALERI
+
+Menyimpan foto dokumentasi kegiatan masjid yang dikelola admin dan ditampilkan di halaman galeri publik.
+
+| Kolom       | Tipe | Keterangan                                               |
+| ----------- | ---- | -------------------------------------------------------- |
+| `id`        | UUID | Primary key, di-generate otomatis                        |
+| `judul`     | TEXT | Judul/nama foto                                          |
+| `deskripsi` | TEXT | Deskripsi foto (opsional)                                |
+| `image_url` | TEXT | URL publik dari Supabase Storage bucket `galeri`         |
+| `kategori`  | TEXT | Kegiatan / Kajian / Renovasi / Sosial / Ramadan / Lainnya |
+| `tanggal`   | DATE | Tanggal foto diambil                                     |
+
+---
+
+### PROGRAM_IMAGES
+
+Menyimpan URL foto untuk masing-masing program unggulan masjid yang ditampilkan di halaman beranda.
+
+| Kolom       | Tipe | Keterangan                                               |
+| ----------- | ---- | -------------------------------------------------------- |
+| `key`       | TEXT | Primary key — slug program (contoh: `tpa-al-hidayah`)    |
+| `image_url` | TEXT | URL publik dari Supabase Storage bucket `program-images` |
+
+**Nilai `key` yang tersedia:**
+
+| key               | Program            |
+| ----------------- | ------------------ |
+| `tpa-al-hidayah`  | TPA Al-Hidayah     |
+| `kajian-sabtu`    | Kajian Sabtu       |
+| `wakaf-produktif` | Wakaf Produktif    |
+| `tahsin-alquran`  | Tahsin Al-Qur'an   |
+
+---
+
 ## Relasi Antar Tabel
 
-| Relasi          | Tipe                   | Keterangan                                                                                                                   |
-| --------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| KHATIB → JADWAL | One-to-Many (opsional) | Satu khatib dapat mengisi banyak jadwal. Jika khatib dihapus, kolom `khatib_id` di jadwal menjadi NULL (ON DELETE SET NULL) |
+| Relasi          | Tipe                   | Keterangan                                                                                                                    |
+| --------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| KHATIB → JADWAL | One-to-Many (opsional) | Satu khatib dapat mengisi banyak jadwal. Jika khatib dihapus, kolom `khatib_id` di jadwal menjadi NULL (ON DELETE SET NULL)  |
 
-> **REKENING** dan **QRIS_DONASI** tidak memiliki relasi ke tabel lain — keduanya berdiri sendiri sebagai data master donasi.
+> Tabel **REKENING**, **PENGATURAN**, **BERITA**, **GALERI**, dan **PROGRAM_IMAGES** berdiri sendiri tanpa relasi ke tabel lain.
 
 ---
 
@@ -185,9 +260,31 @@ Menyimpan URL gambar QRIS donasi masjid. Data dikelola admin dan ditampilkan di 
 | Khutbah Jumat            |
 | Kajian Sabtu             |
 | Tahsin Al-Qur'an         |
-| Tahfidz                  |
 | TPA Al-Hidayah           |
+| Pengajian                |
 | Maulid & Kegiatan Khusus |
+
+### Kategori Berita (`berita.kategori`)
+
+| Kategori      |
+| ------------- |
+| Pengumuman    |
+| Kajian        |
+| Pendidikan    |
+| Infrastruktur |
+| Sosial        |
+| Renovasi      |
+
+### Kategori Galeri (`galeri.kategori`)
+
+| Kategori |
+| -------- |
+| Kegiatan |
+| Kajian   |
+| Renovasi |
+| Sosial   |
+| Ramadan  |
+| Lainnya  |
 
 ---
 
@@ -202,7 +299,8 @@ flowchart TD
         P2 -- Beranda --> P3[Lihat Info Masjid & Jadwal Sholat]
         P2 -- Jadwal Kegiatan --> P4[Lihat Jadwal Kegiatan]
         P2 -- Laporan Keuangan --> P5[Lihat Laporan Keuangan]
-        P2 -- Donasi / Wakaf --> P6[Lihat Info Donasi]
+        P2 -- Berita & Pengumuman --> P6[Lihat Berita]
+        P2 -- Jadwal Sholat --> P7[Lihat Jadwal Sholat Bulanan]
     end
 
     subgraph ADMIN["👤 Admin"]
@@ -218,45 +316,80 @@ flowchart TD
         A7 -- Jadwal --> A9[Kelola Jadwal Kegiatan]
         A7 -- Keuangan --> A10[Catat Transaksi]
         A7 -- Rekening & QRIS --> A11[Kelola Info Donasi]
+        A7 -- Galeri Foto --> A12[Upload & Kelola Foto]
+        A7 -- Program Unggulan --> A13[Upload Foto Program]
+        A7 -- Berita --> A14[Kelola Berita & Pengumuman]
     end
 ```
 
 ---
 
-### 2. Alur Data Khatib
+### 2. Alur Berita & Pengumuman
 
 ```mermaid
 flowchart TD
     subgraph ADMIN["👤 Admin"]
-        A1([Buka Data Khatib]) --> A2{Pilih Aksi}
+        A1([Buka Menu Berita]) --> A2{Pilih Aksi}
 
-        A2 -- Tambah --> A3[Isi Nama, Gelar, Bidang\nNo HP, Email, Foto]
-        A3 --> A4{Data Sudah Lengkap?}
-        A4 -- Belum --> A5[Lengkapi Data]
-        A5 --> A3
-        A4 -- Ya --> A6[Simpan Data Khatib]
+        A2 -- Tambah --> A3[Isi Judul, Kategori, Tanggal\nRingkasan, Konten, Slug]
+        A3 --> A4{Data Lengkap?}
+        A4 -- Belum --> A3
+        A4 -- Ya --> A5[Simpan Berita]
 
-        A2 -- Ubah --> A7[Edit Data Khatib]
-        A7 --> A8[Simpan Perubahan]
+        A2 -- Edit --> A6[Ubah Data Berita]
+        A6 --> A7[Simpan Perubahan]
 
-        A2 -- Hapus --> A9{Yakin Hapus?}
-        A9 -- Batal --> A2
-        A9 -- Ya --> A10[Hapus Data Khatib]
-        A10 --> A11[Nama khatib di jadwal\notomatis dikosongkan]
+        A2 -- Hapus --> A8{Yakin Hapus?}
+        A8 -- Batal --> A2
+        A8 -- Ya --> A9[Hapus Berita]
     end
 
     subgraph PUBLIK["👥 Pengunjung"]
-        P1([Buka Jadwal Kegiatan]) --> P2[Lihat Jadwal\nbeserta Nama Khatib]
+        P1([Buka Beranda]) --> P2[Lihat 3 Berita Terbaru]
+        P2 --> P3[Klik Lihat Semua]
+        P3 --> P4[Halaman /berita — semua berita]
+        P4 --> P5[Klik Berita]
+        P5 --> P6[Detail Berita + Berita Lainnya]
     end
 
-    A6 --> P2
-    A8 --> P2
-    A11 --> P2
+    A5 --> P2
+    A7 --> P2
+    A9 --> P2
 ```
 
 ---
 
-### 3. Alur Jadwal Kegiatan
+### 3. Alur Galeri Foto
+
+```mermaid
+flowchart TD
+    subgraph ADMIN["👤 Admin"]
+        A1([Buka Galeri Foto]) --> A2{Pilih Aksi}
+
+        A2 -- Upload Foto --> A3[Pilih File Gambar]
+        A3 --> A4[Isi Judul, Kategori, Tanggal\nDeskripsi opsional]
+        A4 --> A5[Upload ke Storage bucket galeri]
+        A5 --> A6[Simpan URL ke tabel galeri]
+
+        A2 -- Hapus --> A7{Yakin Hapus?}
+        A7 -- Batal --> A2
+        A7 -- Ya --> A8[Hapus dari Storage & DB]
+    end
+
+    subgraph PUBLIK["👥 Pengunjung"]
+        P1([Buka Halaman /galeri]) --> P2[Lihat Grid Foto]
+        P2 --> P3{Filter Kategori}
+        P3 --> P4[Foto Terfilter]
+        P4 --> P5[Klik Foto → Lightbox]
+    end
+
+    A6 --> P2
+    A8 --> P2
+```
+
+---
+
+### 4. Alur Jadwal Kegiatan
 
 ```mermaid
 flowchart TD
@@ -266,36 +399,32 @@ flowchart TD
         A2 -- Tambah --> A3[Isi Tanggal, Jenis Kegiatan\nWaktu, Topik, Keterangan]
         A3 --> A4{Ada Khatib?}
         A4 -- Ya --> A5[Pilih Nama Khatib]
-        A5 --> A6{Data Sudah Lengkap?}
+        A5 --> A6[Simpan Jadwal]
         A4 -- Tidak --> A6
-        A6 -- Belum --> A7[Lengkapi Data]
-        A7 --> A3
-        A6 -- Ya --> A8[Simpan Jadwal]
 
-        A2 -- Ubah --> A9[Edit Data Jadwal]
-        A9 --> A10[Simpan Perubahan]
+        A2 -- Ubah --> A7[Edit Data Jadwal]
+        A7 --> A8[Simpan Perubahan]
 
-        A2 -- Hapus --> A11{Yakin Hapus?}
-        A11 -- Batal --> A2
-        A11 -- Ya --> A12[Hapus Jadwal]
+        A2 -- Hapus --> A9{Yakin Hapus?}
+        A9 -- Batal --> A2
+        A9 -- Ya --> A10[Hapus Jadwal]
     end
 
     subgraph PUBLIK["👥 Pengunjung"]
-        P1([Buka Jadwal Kegiatan]) --> P2{Tampilan}
-        P2 -- Semua --> P3[Lihat Seluruh Jadwal]
-        P2 -- Bulan Ini --> P4[Lihat Jadwal Bulan Ini]
-        P3 --> P5[Tanggal, Waktu, Jenis\nTopik, Nama Khatib]
-        P4 --> P5
+        P1([Beranda]) --> P2[Lihat 6 Jadwal Mendatang]
+        P2 --> P3[Klik Lihat Semua]
+        P3 --> P4[Halaman /jadwal-kegiatan]
+        P4 --> P5[Jadwal Mendatang & Sudah Berlalu]
     end
 
-    A8 --> P1
-    A10 --> P1
-    A12 --> P1
+    A6 --> P2
+    A8 --> P2
+    A10 --> P2
 ```
 
 ---
 
-### 4. Alur Keuangan
+### 5. Alur Keuangan
 
 ```mermaid
 flowchart TD
@@ -303,44 +432,38 @@ flowchart TD
         A1([Buka Keuangan]) --> A2[Lihat Daftar Transaksi & Saldo]
         A2 --> A3{Pilih Aksi}
 
-        A3 -- Catat Donasi\nShortcut --> A4[Kategori otomatis:\nDonasi Transfer · Pemasukan]
-        A4 --> A5[Isi Nominal & Tanggal]
-        A5 --> A6[Simpan → masuk Laporan]
+        A3 -- Tambah Transaksi --> A4{Pilih Jenis}
+        A4 -- Pemasukan --> A5[Pilih Kategori:\nInfaq Jumat / Kotak Amal\nDonasi Transfer / Wakaf / Zakat]
+        A4 -- Pengeluaran --> A6[Pilih Kategori:\nListrik & Air / Kebersihan\nOperasional / Kajian / Pembangunan]
+        A5 --> A7[Isi Keterangan, Jumlah, Tanggal]
+        A6 --> A7
+        A7 --> A8[Simpan Transaksi]
 
-        A3 -- Tambah Transaksi\nManual --> A7{Pilih Jenis}
-        A7 -- Pemasukan --> A8[Pilih Kategori:\nInfaq Jumat / Kotak Amal\nDonasi Transfer / Wakaf / Zakat]
-        A7 -- Pengeluaran --> A9[Pilih Kategori:\nListrik & Air / Kebersihan\nOperasional / Kajian / Pembangunan]
-        A8 --> A10[Isi Keterangan, Jumlah, Tanggal]
-        A9 --> A10
-        A10 --> A11[Simpan Transaksi]
+        A3 -- Export --> A9{Format}
+        A9 -- CSV --> A10[Download .csv]
+        A9 -- Excel --> A11[Download .xlsx bergaya]
+        A9 -- Print --> A12[Halaman Cetak / PDF]
 
-        A3 -- Export --> A12{Format}
-        A12 -- CSV --> A13[Download .csv]
-        A12 -- Excel --> A14[Download .xlsx]
-        A12 -- Print / PDF --> A15[Buka Halaman Cetak]
-
-        A3 -- Hapus --> A16{Yakin Hapus?}
-        A16 -- Batal --> A2
-        A16 -- Ya --> A17[Hapus Transaksi]
+        A3 -- Hapus --> A13{Yakin Hapus?}
+        A13 -- Batal --> A2
+        A13 -- Ya --> A14[Hapus Transaksi]
     end
 
     subgraph PUBLIK["👥 Pengunjung"]
         P1([Buka Laporan Keuangan]) --> P2[Lihat Total Pemasukan\nTotal Pengeluaran & Saldo]
-        P2 --> P3{Filter}
-        P3 -- Per Bulan --> P4[Laporan Bulanan]
-        P3 -- Per Jenis --> P5[Masuk / Keluar]
-        P4 --> P6[Tampil Laporan Lengkap]
-        P5 --> P6
+        P2 --> P3[Filter Tahun]
+        P3 --> P4[Grafik Bulanan & Pie Chart]
+        P4 --> P5[Riwayat Transaksi Lengkap]
+        P5 --> P6[Export CSV / Excel / Print]
     end
 
-    A6 --> P1
-    A11 --> P1
-    A17 --> P1
+    A8 --> P1
+    A14 --> P1
 ```
 
 ---
 
-### 5. Alur Donasi → Laporan Keuangan
+### 6. Alur Donasi → Laporan Keuangan
 
 ```mermaid
 flowchart TD
@@ -353,57 +476,15 @@ flowchart TD
     end
 
     subgraph ADMIN["👤 Admin"]
-        D5 --> A1[Cek Notifikasi Mutasi\nRekening / Aplikasi QRIS]
+        D5 --> A1[Cek Notifikasi Mutasi]
         A1 --> A2([Buka Admin Keuangan])
-        A2 --> A3[Klik Catat Donasi]
-        A3 --> A4[Isi Nominal & Tanggal\nKategori otomatis: Donasi Transfer]
-        A4 --> A5[Simpan]
-        A5 --> A6[(TRANSAKSI\nmasuk · Donasi Transfer)]
+        A2 --> A3[Tambah Transaksi — Pemasukan\nKategori: Donasi Transfer]
+        A3 --> A4[(TRANSAKSI\nmasuk · Donasi Transfer)]
     end
 
     subgraph PUBLIK["👥 Pengunjung"]
-        A6 --> P1[Laporan Keuangan\ndiperbarui otomatis]
+        A4 --> P1[Laporan Keuangan\ndiperbarui otomatis]
     end
-```
-
----
-
-### 6. Alur Kelola Rekening & QRIS
-
-```mermaid
-flowchart TD
-    subgraph ADMIN["👤 Admin"]
-        A1([Buka Rekening & QRIS]) --> A2{Pilih Aksi}
-
-        A2 -- Tambah Rekening --> A3[Isi Nama Bank\nNo Rekening, Nama Pemilik]
-        A3 --> A4{Data Lengkap?}
-        A4 -- Belum --> A3
-        A4 -- Ya --> A5[Simpan Rekening]
-
-        A2 -- Ubah Rekening --> A6[Edit & Simpan]
-
-        A2 -- Aktifkan / Nonaktifkan --> A7[Rekening tampil\natau disembunyikan dari publik]
-
-        A2 -- Hapus Rekening --> A8{Yakin Hapus?}
-        A8 -- Batal --> A2
-        A8 -- Ya --> A9[Hapus Rekening]
-
-        A2 -- Ganti Gambar QRIS --> A10[Pilih & Unggah Gambar]
-        A10 --> A11[QRIS Tersimpan di Storage]
-    end
-
-    subgraph PUBLIK["👥 Pengunjung"]
-        P1([Buka Halaman Donasi]) --> P2[Tab Transfer:\nDaftar Rekening Aktif]
-        P1 --> P3[Tab QRIS:\nGambar QR untuk Scan]
-        P2 --> P4[Salin No. Rekening]
-        P3 --> P5[Scan & Bayar]
-    end
-
-    A5 --> P2
-    A6 --> P2
-    A7 --> P2
-    A9 --> P2
-    A11 --> P3
 ```
 
 ---
@@ -412,17 +493,45 @@ flowchart TD
 
 Semua tabel menggunakan Row Level Security (RLS) Supabase.
 
-| Operasi                  | Hak Akses                         |
-| ------------------------ | --------------------------------- |
-| SELECT (baca)            | Publik — siapa saja dapat membaca |
-| INSERT / UPDATE / DELETE | Hanya admin yang terautentikasi   |
+| Operasi                  | Hak Akses                          |
+| ------------------------ | ---------------------------------- |
+| SELECT (baca)            | Publik — siapa saja dapat membaca  |
+| INSERT / UPDATE / DELETE | Hanya admin yang terautentikasi    |
 
 ---
 
 ## Storage Bucket (Supabase Storage)
 
-| Bucket          | Isi                              | Akses  |
-| --------------- | -------------------------------- | ------ |
-| `khatib-photos` | Foto profil khatib/ustadz        | Public |
-| `qris`          | Gambar QRIS donasi masjid        | Public |
-| `program-images`| Foto program unggulan masjid     | Public |
+| Bucket           | Digunakan oleh       | Isi                                   | Akses  |
+| ---------------- | -------------------- | ------------------------------------- | ------ |
+| `khatib-photos`  | Tabel `khatib`       | Foto profil khatib/ustadz             | Public |
+| `qris`           | Tabel `pengaturan`   | Gambar QRIS donasi masjid             | Public |
+| `program-images` | Tabel `program_images` | Foto program unggulan di beranda    | Public |
+| `galeri`         | Tabel `galeri`       | Foto dokumentasi kegiatan masjid      | Public |
+
+---
+
+## Halaman Publik
+
+| URL                    | Keterangan                                     |
+| ---------------------- | ---------------------------------------------- |
+| `/`                    | Beranda — jadwal sholat, kegiatan, berita, donasi |
+| `/berita`              | Daftar semua berita & pengumuman               |
+| `/berita/[slug]`       | Detail berita                                  |
+| `/jadwal-kegiatan`     | Semua jadwal kegiatan mendatang & arsip        |
+| `/jadwal-sholat`       | Jadwal sholat bulanan Kota Surabaya            |
+| `/laporan-keuangan`    | Laporan keuangan transparan + export           |
+
+## Halaman Admin
+
+| URL                    | Keterangan                         |
+| ---------------------- | ---------------------------------- |
+| `/admin/login`         | Halaman login admin                |
+| `/admin/dashboard`     | Ringkasan statistik                |
+| `/admin/khatib`        | Kelola data khatib & ustadz        |
+| `/admin/jadwal`        | Kelola jadwal kegiatan             |
+| `/admin/keuangan`      | Catat & kelola transaksi keuangan  |
+| `/admin/galeri`        | Upload & kelola foto galeri        |
+| `/admin/program`       | Upload foto program unggulan       |
+| `/admin/berita`        | Kelola berita & pengumuman         |
+| `/admin/rekening`      | Kelola nomor rekening & QRIS       |

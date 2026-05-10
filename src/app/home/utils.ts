@@ -1,4 +1,4 @@
-import { DEFAULT_KHATIB, type Khatib } from "@/lib/adminTypes";
+import { DEFAULT_KHATIB, type Khatib, type Jadwal } from "@/lib/adminTypes";
 import { getJadwalMendatang } from "@/lib/controllers/jadwalController";
 import { getKhatibById } from "@/lib/controllers/khatibController";
 import { getAllProgramImages } from "@/lib/controllers/programController";
@@ -78,42 +78,25 @@ export function buildPrayerRows(wibNow: Date, wibTomorrow: Date, t1: ApiTimings,
 }
 
 // ── Jadwal kegiatan ────────────────────────────────────────────────────────
-export function getUpcomingEvents(from: Date): UpcomingEvent[] {
-  const activeKhatib = DEFAULT_KHATIB.filter((k) => k.aktif);
-  let kidx = 0;
-  const events: UpcomingEvent[] = [];
-  const topicsFriday = [
-    "Keutamaan Sholat Berjamaah",
-    "Akhlak Muslim dalam Kehidupan Sehari-hari",
-    "Mengenal 99 Asmaul Husna",
-    "Birrul Walidain — Berbakti kepada Orang Tua",
-  ];
-  const topicsSabtu = ["Fiqih Sholat Lengkap", "Tafsir Juz Amma — Surah Pendek"];
-  const daysToFriday = (5 - from.getDay() + 7) % 7 || 7;
+const BADGE_BY_JENIS: Record<string, string> = {
+  "Khutbah Jumat":   "amber",
+  "Kajian":          "blue",
+  "Kajian Sabtu":    "blue",
+  "Pengajian":       "blue",
+  "Tahsin":          "emerald",
+  "Tahsin Al-Qur'an":"emerald",
+};
 
-  for (let w = 0; w < 4; w++) {
-    const friday = new Date(from);
-    friday.setDate(from.getDate() + daysToFriday + w * 7);
-    events.push({
-      id: `f${w}`, tanggal: friday, jenis: "Khutbah Jumat", badge: "amber",
-      topik: topicsFriday[w % topicsFriday.length],
-      khatib: activeKhatib[kidx++ % activeKhatib.length].nama,
-      waktu: "11:30",
-    });
-    if (w < 2) {
-      const saturday = new Date(friday);
-      saturday.setDate(friday.getDate() + 1);
-      events.push({
-        id: `s${w}`, tanggal: saturday,
-        jenis: w === 0 ? "Kajian Sabtu" : "Tahsin Al-Qur'an",
-        badge: w === 0 ? "blue" : "emerald",
-        topik: topicsSabtu[w],
-        khatib: activeKhatib[kidx++ % activeKhatib.length].nama,
-        waktu: w === 0 ? "08:00" : "09:00",
-      });
-    }
-  }
-  return events.sort((a, b) => a.tanggal.getTime() - b.tanggal.getTime()).slice(0, 6);
+export function jadwalToEvents(jadwals: Jadwal[]): UpcomingEvent[] {
+  return jadwals.map((j) => ({
+    id:      j.id,
+    tanggal: new Date(j.tanggal + "T00:00:00"),
+    jenis:   j.jenisKegiatan,
+    badge:   BADGE_BY_JENIS[j.jenisKegiatan] ?? "blue",
+    topik:   j.topik,
+    khatib:  j.khatibNama || "Pengurus Masjid",
+    waktu:   j.waktu || "00:00",
+  }));
 }
 
 // ── Khatib Jumat ───────────────────────────────────────────────────────────

@@ -11,8 +11,10 @@ import KontakSection from "./sections/KontakSection";
 import {
   getWIBNow, toDisplayDate, getNextFriday,
   fetchTimings, buildPrayerRows,
-  getUpcomingEvents, getKhatibForFriday, getProgramsWithImages,
+  jadwalToEvents, getKhatibForFriday, getProgramsWithImages,
 } from "./utils";
+import { getJadwalMendatang } from "@/lib/controllers/jadwalController";
+import { getAllBerita } from "@/lib/controllers/beritaController";
 
 export default async function HomePages() {
   const wibNow      = getWIBNow();
@@ -21,16 +23,18 @@ export default async function HomePages() {
 
   const nextFriday  = getNextFriday(wibNow);
 
-  const [t1, t2, fridayKhatib, programs] = await Promise.all([
+  const [t1, t2, fridayKhatib, programs, jadwals, beritaItems] = await Promise.all([
     fetchTimings(wibNow),
     fetchTimings(wibTomorrow),
     getKhatibForFriday(nextFriday),
     getProgramsWithImages(),
+    getJadwalMendatang(6).catch(() => []),
+    getAllBerita().catch(() => []),
   ]);
 
   const prayerData   = buildPrayerRows(wibNow, wibTomorrow, t1, t2);
   const khutbahLabel = `Khutbah Jumat, ${toDisplayDate(nextFriday)}`;
-  const events       = getUpcomingEvents(wibNow);
+  const events       = jadwalToEvents(jadwals);
 
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
@@ -41,7 +45,7 @@ export default async function HomePages() {
       <JadwalKegiatanSection events={events} />
       <ProgramSection programs={programs} />
       <FasilitasSection />
-      <BeritaSection />
+      <BeritaSection beritaList={beritaItems} />
       <KontakSection />
       <Footer />
     </div>

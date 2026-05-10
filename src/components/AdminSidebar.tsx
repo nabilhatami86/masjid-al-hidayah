@@ -10,6 +10,7 @@ import {
   Wallet,
   Images,
   CreditCard,
+  Newspaper,
   ExternalLink,
   LogOut,
   UserCircle,
@@ -25,6 +26,7 @@ const navItems = [
   { href: "/admin/keuangan",  label: "Keuangan",         icon: Wallet          },
   { href: "/admin/galeri",    label: "Galeri Foto",      icon: Images          },
   { href: "/admin/program",   label: "Program Unggulan", icon: Images          },
+  { href: "/admin/berita",    label: "Berita",           icon: Newspaper       },
   { href: "/admin/rekening",  label: "Nomor Rekening",   icon: CreditCard      },
 ];
 

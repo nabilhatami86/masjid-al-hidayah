@@ -53,7 +53,7 @@ export default function Sidebar() {
             <li key={link.label}>
               <Link
                 href={link.href}
-                className="text-[13.5px] font-medium text-amber-600 hover:text-amber-700 transition-colors"
+                className="text-[13.5px] font-medium text-grey-600 hover:text-amber-700 transition-colors"
               >
                 {link.label}
               </Link>

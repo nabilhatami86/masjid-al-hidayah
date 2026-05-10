@@ -3,9 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { beritaList } from "@/app/berita/data";
+import { type BeritaDB, getBeritaColors, formatTanggalBerita } from "@/lib/controllers/beritaController";
 
-// ─── CSS KEYFRAMES ─────────────────────────────────────────────────────────────
 const KEYFRAMES = `
   @keyframes bSlideUp {
     from { opacity: 0; transform: translateY(30px); }
@@ -29,35 +28,34 @@ const KEYFRAMES = `
   .b-fade       { animation: bFade       0.45s ease-out both; }
 `;
 
-// ─── SCROLL REVEAL HOOK ────────────────────────────────────────────────────────
 function useInView(threshold = 0.1) {
   const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
-
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisible(true);
-          obs.disconnect();
-        }
-      },
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
       { threshold },
     );
     obs.observe(el);
     return () => obs.disconnect();
   }, [threshold]);
-
   return { ref, visible };
 }
 
-// ─── KOMPONEN ─────────────────────────────────────────────────────────────────
-export default function BeritaSection() {
-  const section = useInView(0.08);
+interface Props {
+  beritaList: BeritaDB[];
+}
+
+export default function BeritaSection({ beritaList }: Props) {
+  const section  = useInView(0.08);
   const featured = beritaList[0];
-  const sideItems = beritaList.slice(1);
+  const sideItems = beritaList.slice(1, 3);
+
+  if (beritaList.length === 0) return null;
+
+  const fc = getBeritaColors(featured.kategori);
 
   return (
     <>
@@ -66,7 +64,6 @@ export default function BeritaSection() {
       <section ref={section.ref} id="berita" className="px-4 py-16 bg-white">
         <div className="max-w-4xl mx-auto">
 
-          {/* Header row */}
           <div
             className={`flex items-end justify-between mb-8 ${section.visible ? "b-slide-up" : "opacity-0"}`}
             style={{ animationDelay: "0ms" }}
@@ -88,7 +85,6 @@ export default function BeritaSection() {
             </Link>
           </div>
 
-          {/* Featured + side layout */}
           <div className="grid sm:grid-cols-[1.4fr_1fr] gap-4">
 
             {/* Featured card */}
@@ -100,8 +96,8 @@ export default function BeritaSection() {
               style={{ animationDelay: "100ms" }}
             >
               <div className="flex items-center gap-2 mb-4">
-                <span className={`w-2 h-2 rounded-sm shrink-0 ${featured.dotColor}`} />
-                <span className={`text-[10.5px] font-bold uppercase tracking-widest ${featured.labelColor}`}>
+                <span className={`w-2 h-2 rounded-sm shrink-0 ${fc.dotColor}`} />
+                <span className={`text-[10.5px] font-bold uppercase tracking-widest ${fc.labelColor}`}>
                   {featured.kategori}
                 </span>
               </div>
@@ -112,7 +108,7 @@ export default function BeritaSection() {
                 {featured.ringkasan}
               </p>
               <div className="flex items-center justify-between pt-3 border-t border-gray-200/80">
-                <span className="text-[11px] text-gray-400">{featured.tanggal}</span>
+                <span className="text-[11px] text-gray-400">{formatTanggalBerita(featured.tanggal)}</span>
                 <span className="text-[11.5px] font-semibold text-amber-600 flex items-center gap-0.5 group-hover:gap-1.5 transition-all duration-150">
                   Selengkapnya <ChevronRight size={13} strokeWidth={2.5} />
                 </span>
@@ -121,36 +117,38 @@ export default function BeritaSection() {
 
             {/* Side stack */}
             <div className="flex flex-col gap-4">
-              {sideItems.map((b, i) => (
-                <Link
-                  key={b.slug}
-                  href={`/berita/${b.slug}`}
-                  className={`group flex flex-col bg-gray-50 hover:bg-amber-50/60 border border-gray-100 hover:border-amber-200/80 rounded-2xl p-5 cursor-pointer transition-all duration-200 flex-1 ${
-                    section.visible ? "b-slide-right" : "opacity-0"
-                  }`}
-                  style={{ animationDelay: `${180 + i * 90}ms` }}
-                >
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <span className={`w-1.5 h-1.5 rounded-sm shrink-0 ${b.dotColor}`} />
-                    <span className={`text-[10px] font-bold uppercase tracking-widest ${b.labelColor}`}>
-                      {b.kategori}
-                    </span>
-                  </div>
-                  <h4 className="text-[13.5px] font-bold text-gray-900 leading-snug group-hover:text-amber-800 transition-colors flex-1 mb-3">
-                    {b.judul}
-                  </h4>
-                  <div className="flex items-center justify-between pt-2.5 border-t border-gray-200/80">
-                    <span className="text-[11px] text-gray-400">{b.tanggal}</span>
-                    <span className="text-[11px] font-semibold text-amber-600 flex items-center gap-0.5 group-hover:gap-1 transition-all duration-150">
-                      Baca <ChevronRight size={12} strokeWidth={2.5} />
-                    </span>
-                  </div>
-                </Link>
-              ))}
+              {sideItems.map((b, i) => {
+                const bc = getBeritaColors(b.kategori);
+                return (
+                  <Link
+                    key={b.id}
+                    href={`/berita/${b.slug}`}
+                    className={`group flex flex-col bg-gray-50 hover:bg-amber-50/60 border border-gray-100 hover:border-amber-200/80 rounded-2xl p-5 cursor-pointer transition-all duration-200 flex-1 ${
+                      section.visible ? "b-slide-right" : "opacity-0"
+                    }`}
+                    style={{ animationDelay: `${180 + i * 90}ms` }}
+                  >
+                    <div className="flex items-center gap-2 mb-2.5">
+                      <span className={`w-1.5 h-1.5 rounded-sm shrink-0 ${bc.dotColor}`} />
+                      <span className={`text-[10px] font-bold uppercase tracking-widest ${bc.labelColor}`}>
+                        {b.kategori}
+                      </span>
+                    </div>
+                    <h4 className="text-[13.5px] font-bold text-gray-900 leading-snug group-hover:text-amber-800 transition-colors flex-1 mb-3">
+                      {b.judul}
+                    </h4>
+                    <div className="flex items-center justify-between pt-2.5 border-t border-gray-200/80">
+                      <span className="text-[11px] text-gray-400">{formatTanggalBerita(b.tanggal)}</span>
+                      <span className="text-[11px] font-semibold text-amber-600 flex items-center gap-0.5 group-hover:gap-1 transition-all duration-150">
+                        Baca <ChevronRight size={12} strokeWidth={2.5} />
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
 
-          {/* Mobile "lihat semua" */}
           <div
             className={`mt-5 flex sm:hidden justify-center ${section.visible ? "b-fade" : "opacity-0"}`}
             style={{ animationDelay: "380ms" }}

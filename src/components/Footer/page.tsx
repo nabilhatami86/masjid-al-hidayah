@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 const menuLinks = [
-  { label: "Beranda",       href: "/"              },
-  { label: "Profil",        href: "/#profil"       },
-  { label: "Kajian",        href: "/#kajian"       },
+  { label: "Beranda", href: "/" },
+  { label: "Profil", href: "/#profil" },
+  { label: "Kajian", href: "/#kajian" },
   { label: "Jadwal Sholat", href: "/jadwal-sholat" },
   { label: "Laporan Keuangan", href: "/laporan-keuangan" },
 ];
@@ -37,12 +37,6 @@ export default function Footer() {
             Masjid Al-Hidayah — Ketintang, Surabaya, Jawa Timur. Pusat kegiatan
             keislaman dan pemberdayaan umat.
           </p>
-          <Link
-            href="/laporan-keuangan"
-            className="inline-block mt-4 text-[12px] text-amber-400 hover:text-amber-300 transition-colors font-semibold"
-          >
-            Laporan Keuangan →
-          </Link>
         </div>
 
         {/* Menu Links */}
