@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ADMIN_TOKEN, ADMIN_USERNAME, ADMIN_PASSWORD } from "@/lib/adminTypes";
 import Image from "next/image";
 import { User, Lock, Eye, EyeOff, LogIn, Info } from "lucide-react";
 
@@ -13,19 +12,30 @@ export default function AdminLogin() {
   const [loading, setLoading]   = useState(false);
   const [showPass, setShowPass] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setTimeout(() => {
-      if (form.username === ADMIN_USERNAME && form.password === ADMIN_PASSWORD) {
-        localStorage.setItem("admin_token", ADMIN_TOKEN);
-        router.replace("/admin/dashboard");
-      } else {
-        setError("Username atau password salah.");
-        setLoading(false);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: form.username, password: form.password }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error ?? "Username atau password salah.");
+        return;
       }
-    }, 600);
+      localStorage.setItem("admin_token", json.token);
+      localStorage.setItem("admin_username", json.user.username);
+      localStorage.setItem("admin_nama", json.user.nama ?? "");
+      router.replace("/admin/dashboard");
+    } catch {
+      setError("Gagal terhubung ke server. Coba lagi.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -116,16 +126,6 @@ export default function AdminLogin() {
             </button>
           </form>
 
-          {/* Demo credentials */}
-          <div className="mt-6 pt-4 border-t border-gray-100">
-            <div className="bg-amber-50 rounded-xl p-3.5 border border-amber-100">
-              <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1.5">Kredensial Demo</p>
-              <div className="space-y-0.5">
-                <p className="text-[12px] text-amber-600">Username: <code className="font-mono bg-amber-100 px-1 rounded">admin</code></p>
-                <p className="text-[12px] text-amber-600">Password: <code className="font-mono bg-amber-100 px-1 rounded">admin123</code></p>
-              </div>
-            </div>
-          </div>
         </div>
 
         <p className="text-center text-[12px] text-gray-400 mt-6">

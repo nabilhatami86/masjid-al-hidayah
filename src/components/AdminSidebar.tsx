@@ -16,33 +16,77 @@ import {
   UserCircle,
   Menu,
   X,
+  KeyRound,
+  LayoutGrid,
 } from "lucide-react";
 import { useState } from "react";
 
-const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard",        icon: LayoutDashboard },
-  { href: "/admin/khatib",    label: "Khatib & Ustadz",  icon: Users           },
-  { href: "/admin/jadwal",    label: "Jadwal Kegiatan",  icon: CalendarDays    },
-  { href: "/admin/keuangan",  label: "Keuangan",         icon: Wallet          },
-  { href: "/admin/galeri",    label: "Galeri Foto",      icon: Images          },
-  { href: "/admin/program",   label: "Program Unggulan", icon: Images          },
-  { href: "/admin/berita",    label: "Berita",           icon: Newspaper       },
-  { href: "/admin/rekening",  label: "Nomor Rekening",   icon: CreditCard      },
+const navGroups = [
+  {
+    items: [
+      { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: "Konten",
+    items: [
+      { href: "/admin/khatib",   label: "Khatib & Ustadz",  icon: Users        },
+      { href: "/admin/jadwal",   label: "Jadwal Kegiatan",  icon: CalendarDays },
+      { href: "/admin/berita",   label: "Berita",           icon: Newspaper    },
+      { href: "/admin/galeri",   label: "Galeri Foto",      icon: Images       },
+      { href: "/admin/program",  label: "Program Unggulan", icon: LayoutGrid   },
+    ],
+  },
+  {
+    label: "Keuangan",
+    items: [
+      { href: "/admin/keuangan",  label: "Transaksi",       icon: Wallet       },
+      { href: "/admin/rekening",  label: "Nomor Rekening",  icon: CreditCard   },
+    ],
+  },
+  {
+    label: "Pengaturan",
+    items: [
+      { href: "/admin/akun", label: "Kelola Akun", icon: KeyRound },
+    ],
+  },
 ];
 
-function SidebarContent({
-  pathname,
-  onClose,
-  onLogout,
+function NavLink({
+  href, label, icon: Icon, active, onClose,
 }: {
-  pathname: string;
-  onClose: () => void;
-  onLogout: () => void;
+  href: string; label: string; icon: React.ElementType;
+  active: boolean; onClose: () => void;
 }) {
   return (
-    <div className="flex flex-col h-full">
+    <Link
+      href={href}
+      onClick={onClose}
+      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${
+        active
+          ? "bg-amber-500 text-white shadow-sm"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+      }`}
+    >
+      <Icon size={16} strokeWidth={active ? 2.5 : 1.8} />
+      {label}
+    </Link>
+  );
+}
+
+function SidebarContent({
+  pathname, onClose, onLogout,
+}: {
+  pathname: string; onClose: () => void; onLogout: () => void;
+}) {
+  const adminNama     = typeof window !== "undefined" ? localStorage.getItem("admin_nama")     ?? "" : "";
+  const adminUsername = typeof window !== "undefined" ? localStorage.getItem("admin_username") ?? "admin" : "admin";
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-100">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 shrink-0">
         <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 shadow-sm">
           <Image src="/logo.png" width={22} height={22} alt="Logo" />
         </div>
@@ -53,46 +97,54 @@ function SidebarContent({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={onClose}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium transition-all ${
-                active
-                  ? "bg-amber-500 text-white shadow-sm"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-              }`}
-            >
-              <Icon size={17} strokeWidth={active ? 2.5 : 1.8} />
-              {label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-3 space-y-4">
+        {navGroups.map((group, gi) => (
+          <div key={gi}>
+            {group.label && (
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-3 mb-1">
+                {group.label}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map(({ href, label, icon }) => (
+                <NavLink
+                  key={href}
+                  href={href}
+                  label={label}
+                  icon={icon}
+                  active={pathname === href || pathname.startsWith(href + "/")}
+                  onClose={onClose}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
 
-        <div className="pt-3 border-t border-gray-100 mt-3">
+        {/* Lihat Website */}
+        <div className="border-t border-gray-100 pt-3">
           <Link
             href="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13.5px] font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-all"
+            className="flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-all"
           >
-            <ExternalLink size={17} strokeWidth={1.8} />
+            <ExternalLink size={16} strokeWidth={1.8} />
             Lihat Website
           </Link>
         </div>
       </nav>
 
       {/* User + Logout */}
-      <div className="px-3 pb-5 border-t border-gray-100 pt-3">
-        <div className="flex items-center gap-2.5 px-3 mb-3">
-          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-            <UserCircle size={18} className="text-amber-600" strokeWidth={1.8} />
+      <div className="shrink-0 px-3 py-3 border-t border-gray-100">
+        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-gray-50 mb-2">
+          <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+            <UserCircle size={16} className="text-amber-600" strokeWidth={1.8} />
           </div>
-          <div>
-            <p className="text-[12px] font-semibold text-gray-800">Administrator</p>
-            <p className="text-[11px] text-gray-400">Pengurus Masjid</p>
+          <div className="min-w-0">
+            <p className="text-[12px] font-semibold text-gray-800 truncate leading-tight">
+              {adminNama || "Administrator"}
+            </p>
+            <p className="text-[10.5px] text-gray-400 truncate font-mono leading-tight">
+              {adminUsername}
+            </p>
           </div>
         </div>
         <button
@@ -108,12 +160,14 @@ function SidebarContent({
 }
 
 export default function AdminSidebar() {
-  const pathname    = usePathname();
-  const router      = useRouter();
+  const pathname = usePathname();
+  const router   = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   function logout() {
     localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_username");
+    localStorage.removeItem("admin_nama");
     router.replace("/admin/login");
   }
 
