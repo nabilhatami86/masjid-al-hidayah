@@ -99,6 +99,7 @@ export default function KeuanganAdminPage() {
   const [form, setForm] = useState<Omit<TransaksiAdmin, "id">>(EMPTY_FORM);
   const [editId, setEditId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [filterTahun, setFilterTahun] = useState("semua");
   const [filterBulan, setFilterBulan] = useState("semua");
   const [filterJenis, setFilterJenis] = useState<"semua" | "masuk" | "keluar">(
     "semua",
@@ -190,19 +191,38 @@ export default function KeuanganAdminPage() {
     });
   }
 
+  const availableYears = useMemo(() => {
+    const years = new Set(list.map((t) => t.tanggal.slice(0, 4)));
+    return Array.from(years).sort((a, b) => Number(b) - Number(a));
+  }, [list]);
+
+  const availableMonths = useMemo(() => {
+    const base = filterTahun === "semua" ? list : list.filter((t) => t.tanggal.startsWith(filterTahun));
+    const months = new Set(base.map((t) => t.tanggal.slice(5, 7)));
+    return Array.from(months).sort();
+  }, [list, filterTahun]);
+
   const BULAN_OPTIONS = [
     { val: "semua", label: "Semua Bulan" },
-    ...Array.from({ length: 12 }, (_, i) => ({
-      val: String(i + 1).padStart(2, "0"),
-      label: MONTHS_ID[i],
+    ...availableMonths.map((m) => ({
+      val: m,
+      label: MONTHS_ID[parseInt(m) - 1],
     })),
   ];
+
+  function handleTahunChange(y: string) {
+    setFilterTahun(y);
+    setFilterBulan("semua");
+    setHalaman(1);
+  }
 
   const filtered = useMemo(
     () =>
       list.filter((t) => {
-        const m = t.tanggal.split("-")[1];
+        const y = t.tanggal.slice(0, 4);
+        const m = t.tanggal.slice(5, 7);
         return (
+          (filterTahun === "semua" || y === filterTahun) &&
           (filterBulan === "semua" || m === filterBulan) &&
           (filterJenis === "semua" || t.jenis === filterJenis) &&
           (search === "" ||
@@ -210,7 +230,7 @@ export default function KeuanganAdminPage() {
             t.kategori.toLowerCase().includes(search.toLowerCase()))
         );
       }),
-    [list, filterBulan, filterJenis, search],
+    [list, filterTahun, filterBulan, filterJenis, search],
   );
 
   const totalHalaman = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
@@ -280,15 +300,17 @@ export default function KeuanganAdminPage() {
     form.jenis === "masuk" ? KATEGORI_MASUK : KATEGORI_KELUAR;
 
   function exportLabel() {
-    const bulan = filterBulan === "semua" ? "Semua Bulan" : MONTHS_ID[parseInt(filterBulan) - 1];
-    const jenis = filterJenis === "semua" ? "Semua Transaksi" : filterJenis === "masuk" ? "Pemasukan" : "Pengeluaran";
-    return `${bulan} · ${jenis}`;
+    const tahun = filterTahun === "semua" ? "Semua Tahun" : `Tahun ${filterTahun}`;
+    const bulan = filterBulan === "semua" ? "" : MONTHS_ID[parseInt(filterBulan) - 1];
+    const jenis = filterJenis === "semua" ? "" : filterJenis === "masuk" ? " · Pemasukan" : " · Pengeluaran";
+    return bulan ? `${bulan} ${filterTahun === "semua" ? "" : filterTahun}`.trim() + jenis : tahun + jenis;
   }
 
   function exportFilename(ext: string) {
-    const bulan = filterBulan === "semua" ? "semua" : MONTHS_ID[parseInt(filterBulan) - 1].toLowerCase();
+    const tahun = filterTahun === "semua" ? "semua" : filterTahun;
+    const bulan = filterBulan === "semua" ? "" : `-${filterBulan}`;
     const jenis = filterJenis === "semua" ? "" : `-${filterJenis}`;
-    return `laporan-keuangan-${bulan}${jenis}.${ext}`;
+    return `laporan-keuangan-${tahun}${bulan}${jenis}.${ext}`;
   }
 
   return (
@@ -411,6 +433,16 @@ export default function KeuanganAdminPage() {
                 />
               </div>
               <select
+                value={filterTahun}
+                onChange={(e) => handleTahunChange(e.target.value)}
+                className="text-[13px] border border-gray-200 rounded-xl px-3 py-2 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+              >
+                <option value="semua">Semua Tahun</option>
+                {availableYears.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+              <select
                 value={filterBulan}
                 onChange={(e) => {
                   setFilterBulan(e.target.value);
@@ -453,7 +485,7 @@ export default function KeuanganAdminPage() {
             </div>
 
             {/* Sub-summary filter */}
-            {(filterBulan !== "semua" || filterJenis !== "semua" || search) && (
+            {(filterTahun !== "semua" || filterBulan !== "semua" || filterJenis !== "semua" || search) && (
               <div className="flex gap-4 text-[13px] bg-white rounded-xl px-4 py-2.5 shadow-sm border border-gray-100">
                 <span className="text-emerald-600 font-semibold">
                   Masuk: {rupiah(summary.masuk)}

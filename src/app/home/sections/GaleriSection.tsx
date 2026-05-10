@@ -106,11 +106,16 @@ export default function GaleriSection({ galeriList }: Props) {
                 <div className="absolute top-0 inset-x-0 h-0.5 bg-amber-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-400 origin-left" />
 
                 {/* Info muncul dari bawah */}
-                <div className="absolute inset-x-0 bottom-0 px-3 py-3 bg-linear-to-t from-black/70 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-350">
-                  <p className="text-white text-[12px] font-semibold leading-snug line-clamp-1">
+                <div className="absolute inset-x-0 bottom-0 px-3 py-3 bg-linear-to-t from-black/75 via-black/40 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-350">
+                  <p className="text-white/65 text-[10px] font-semibold uppercase tracking-wide mb-0.5">{item.kategori}</p>
+                  <p className="text-white text-[12px] font-bold leading-snug line-clamp-1">
                     {item.judul}
                   </p>
-                  <p className="text-white/65 text-[10.5px] mt-0.5">{item.kategori}</p>
+                  {item.deskripsi && (
+                    <p className="text-white/70 text-[10.5px] mt-1 leading-snug line-clamp-2">
+                      {item.deskripsi}
+                    </p>
+                  )}
                 </div>
               </Link>
             ))}

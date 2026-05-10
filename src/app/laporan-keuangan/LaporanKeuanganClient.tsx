@@ -22,6 +22,7 @@ export default function LaporanKeuanganClient() {
   const [mounted, setMounted]             = useState(false);
   const [countStarted, setCountStarted]   = useState(false);
   const [tahunFilter, setTahunFilter]     = useState<string>("semua");
+  const [bulanFilter, setBulanFilter]     = useState<string>("semua");
 
   useEffect(() => {
     fetch("/api/transaksi")
@@ -50,11 +51,28 @@ export default function LaporanKeuanganClient() {
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
   }, [transaksiList]);
 
-  // Filter berdasarkan tahun
-  const filteredByYear = useMemo(() => {
-    if (tahunFilter === "semua") return transaksiList;
-    return transaksiList.filter((t) => t.tanggal.startsWith(tahunFilter));
+  const MONTHS_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+
+  // Reset bulan ketika tahun berubah ke "semua"
+  const handleTahunChange = (y: string) => {
+    setTahunFilter(y);
+    if (y === "semua") setBulanFilter("semua");
+  };
+
+  // Bulan yang ada datanya untuk tahun terpilih
+  const availableMonths = useMemo(() => {
+    const base = tahunFilter === "semua" ? transaksiList : transaksiList.filter((t) => t.tanggal.startsWith(tahunFilter));
+    const months = new Set(base.map((t) => t.tanggal.slice(5, 7)));
+    return Array.from(months).sort();
   }, [transaksiList, tahunFilter]);
+
+  // Filter berdasarkan tahun + bulan
+  const filteredByYear = useMemo(() => {
+    let list = transaksiList;
+    if (tahunFilter !== "semua") list = list.filter((t) => t.tanggal.startsWith(tahunFilter));
+    if (bulanFilter !== "semua") list = list.filter((t) => t.tanggal.slice(5, 7) === bulanFilter);
+    return list;
+  }, [transaksiList, tahunFilter, bulanFilter]);
 
   const summary     = useMemo(() => computeSummary(filteredByYear),      [filteredByYear]);
   const monthlyData = useMemo(() => computeMonthlyChart(filteredByYear), [filteredByYear]);
@@ -62,9 +80,17 @@ export default function LaporanKeuanganClient() {
   const pieMasuk    = useMemo(() => computePieMasuk(filteredByYear),     [filteredByYear]);
   const dateRange   = useMemo(() => computeDateRange(filteredByYear),    [filteredByYear]);
 
-  const exportLabel = tahunFilter === "semua"
-    ? `Semua Tahun (${availableYears.join(", ")})`
-    : `Tahun ${tahunFilter}`;
+  const exportLabel = (() => {
+    if (tahunFilter === "semua") return `Semua Tahun (${availableYears.join(", ")})`;
+    if (bulanFilter !== "semua") return `${MONTHS_ID[parseInt(bulanFilter) - 1]} ${tahunFilter}`;
+    return `Tahun ${tahunFilter}`;
+  })();
+
+  const exportFilename = (() => {
+    if (tahunFilter === "semua") return "laporan-keuangan-semua";
+    if (bulanFilter !== "semua") return `laporan-keuangan-${tahunFilter}-${bulanFilter}`;
+    return `laporan-keuangan-${tahunFilter}`;
+  })();
 
   async function handleExportExcel() {
     const { exportExcel } = await import("@/lib/controllers/exportController");
@@ -72,7 +98,7 @@ export default function LaporanKeuanganClient() {
       filteredByYear as Parameters<typeof exportExcel>[0],
       exportLabel,
       summary,
-      `laporan-keuangan-${tahunFilter}.xlsx`,
+      `${exportFilename}.xlsx`,
     );
   }
 
@@ -80,7 +106,7 @@ export default function LaporanKeuanganClient() {
     import("@/lib/controllers/exportController").then(({ exportCSV }) => {
       exportCSV(
         filteredByYear as Parameters<typeof exportCSV>[0],
-        `laporan-keuangan-${tahunFilter}.csv`,
+        `${exportFilename}.csv`,
       );
     });
   }
@@ -117,13 +143,13 @@ export default function LaporanKeuanganClient() {
               <p className="text-sm text-gray-500 mt-1">Masjid Al-Hidayah · Ketintang, Surabaya</p>
             </div>
 
-            {/* Filter Tahun */}
+            {/* Filter Tahun + Bulan */}
             {!loading && availableYears.length > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <label className="text-[12px] text-gray-500 font-medium whitespace-nowrap">Tahun:</label>
                 <select
                   value={tahunFilter}
-                  onChange={(e) => setTahunFilter(e.target.value)}
+                  onChange={(e) => handleTahunChange(e.target.value)}
                   className="text-[13px] border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-300 shadow-sm"
                 >
                   <option value="semua">Semua Tahun</option>
@@ -131,6 +157,22 @@ export default function LaporanKeuanganClient() {
                     <option key={y} value={y}>{y}</option>
                   ))}
                 </select>
+
+                {tahunFilter !== "semua" && (
+                  <>
+                    <label className="text-[12px] text-gray-500 font-medium whitespace-nowrap">Bulan:</label>
+                    <select
+                      value={bulanFilter}
+                      onChange={(e) => setBulanFilter(e.target.value)}
+                      className="text-[13px] border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-300 shadow-sm"
+                    >
+                      <option value="semua">Semua Bulan</option>
+                      {availableMonths.map((m) => (
+                        <option key={m} value={m}>{MONTHS_ID[parseInt(m) - 1]}</option>
+                      ))}
+                    </select>
+                  </>
+                )}
               </div>
             )}
           </div>
