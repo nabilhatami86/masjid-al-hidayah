@@ -18,6 +18,7 @@ import {
   X,
   KeyRound,
   LayoutGrid,
+  BarChart2,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -41,6 +42,7 @@ const navGroups = [
     label: "Keuangan",
     items: [
       { href: "/admin/keuangan",  label: "Transaksi",       icon: Wallet       },
+      { href: "/admin/laporan",   label: "Laporan Alur Kas", icon: BarChart2   },
       { href: "/admin/rekening",  label: "Nomor Rekening",  icon: CreditCard   },
     ],
   },
