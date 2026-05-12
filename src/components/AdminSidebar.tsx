@@ -9,14 +9,13 @@ import {
   CalendarDays,
   Wallet,
   Images,
-  CreditCard,
   Newspaper,
   ExternalLink,
   LogOut,
   UserCircle,
   Menu,
   X,
-  KeyRound,
+  // KeyRound,
   LayoutGrid,
   BarChart2,
   TrendingUp,
@@ -51,17 +50,16 @@ const navGroups = [
   {
     label: "Keuangan",
     items: [
-      // "Transaksi" ditangani sebagai CollapsibleNav di bawah
-      { href: "/admin/rekening", label: "Nomor Rekening", icon: CreditCard },
+      // { href: "/admin/rekening", label: "Nomor Rekening", icon: CreditCard }, // belum dipakai
     ],
     withTransaksi: true,
   },
-  {
-    label: "Pengaturan",
-    items: [
-      { href: "/admin/akun", label: "Kelola Akun", icon: KeyRound },
-    ],
-  },
+  // {
+  //   label: "Pengaturan",
+  //   items: [
+  //     { href: "/admin/akun", label: "Kelola Akun", icon: KeyRound },
+  //   ],
+  // },
 ];
 
 function NavLink({
