@@ -19,8 +19,18 @@ import {
   KeyRound,
   LayoutGrid,
   BarChart2,
+  TrendingUp,
+  TrendingDown,
+  ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
+
+// Sub-item di bawah Transaksi
+const TRANSAKSI_SUB = [
+  { href: "/admin/keuangan/pemasukan",  label: "Pemasukan",   icon: TrendingUp,  color: "text-emerald-600" },
+  { href: "/admin/keuangan/pengeluaran", label: "Pengeluaran", icon: TrendingDown, color: "text-red-500"     },
+  { href: "/admin/laporan",             label: "Arus Kas",    icon: BarChart2,   color: "text-blue-600"    },
+];
 
 const navGroups = [
   {
@@ -41,10 +51,10 @@ const navGroups = [
   {
     label: "Keuangan",
     items: [
-      { href: "/admin/keuangan",  label: "Transaksi",       icon: Wallet       },
-      { href: "/admin/laporan",   label: "Laporan Alur Kas", icon: BarChart2   },
-      { href: "/admin/rekening",  label: "Nomor Rekening",  icon: CreditCard   },
+      // "Transaksi" ditangani sebagai CollapsibleNav di bawah
+      { href: "/admin/rekening", label: "Nomor Rekening", icon: CreditCard },
     ],
+    withTransaksi: true,
   },
   {
     label: "Pengaturan",
@@ -73,6 +83,59 @@ function NavLink({
       <Icon size={16} strokeWidth={active ? 2.5 : 1.8} />
       {label}
     </Link>
+  );
+}
+
+function TransaksiNav({ pathname, onClose }: { pathname: string; onClose: () => void }) {
+  const isAnySubActive = TRANSAKSI_SUB.some(
+    (s) => pathname === s.href || pathname.startsWith(s.href + "/"),
+  );
+  const [open, setOpen] = useState(isAnySubActive);
+
+  return (
+    <div>
+      {/* Parent button */}
+      <button
+        onClick={() => setOpen((p) => !p)}
+        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${
+          isAnySubActive
+            ? "bg-amber-50 text-amber-700"
+            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+        }`}
+      >
+        <Wallet size={16} strokeWidth={isAnySubActive ? 2.5 : 1.8} />
+        <span className="flex-1 text-left">Transaksi</span>
+        <ChevronDown
+          size={14}
+          strokeWidth={2}
+          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Sub-items */}
+      {open && (
+        <div className="mt-0.5 ml-3 pl-4 border-l border-gray-100 space-y-0.5">
+          {TRANSAKSI_SUB.map(({ href, label, icon: Icon, color }) => {
+            const active = pathname === href || pathname.startsWith(href + "/");
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={onClose}
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-[12.5px] font-medium transition-all ${
+                  active
+                    ? "bg-amber-500 text-white shadow-sm"
+                    : `text-gray-500 hover:bg-gray-100 hover:text-gray-800`
+                }`}
+              >
+                <Icon size={14} strokeWidth={active ? 2.5 : 1.8} className={active ? "" : color} />
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -108,6 +171,10 @@ function SidebarContent({
               </p>
             )}
             <div className="space-y-0.5">
+              {/* Transaksi collapsible — hanya di grup Keuangan */}
+              {"withTransaksi" in group && group.withTransaksi && (
+                <TransaksiNav pathname={pathname} onClose={onClose} />
+              )}
               {group.items.map(({ href, label, icon }) => (
                 <NavLink
                   key={href}
