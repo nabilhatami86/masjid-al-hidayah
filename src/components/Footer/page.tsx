@@ -8,6 +8,7 @@ const menuLinks = [
   { label: "Profil", href: "/#profil" },
   { label: "Kajian", href: "/#kajian" },
   { label: "Jadwal Sholat", href: "/jadwal-sholat" },
+  { label: "Kalkulator Zakat", href: "/zakat" },
   { label: "Laporan Keuangan", href: "/laporan-keuangan" },
 ];
 

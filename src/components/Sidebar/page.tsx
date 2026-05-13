@@ -11,6 +11,7 @@ const navLinks = [
   { label: "Kajian", href: "/#kajian" },
   { label: "Fasilitas", href: "/#fasilitas" },
   { label: "Jadwal Sholat", href: "/jadwal-sholat" },
+  { label: "Kalkulator Zakat", href: "/zakat" },
   { label: "Kontak", href: "/#contact" },
 ];
 
