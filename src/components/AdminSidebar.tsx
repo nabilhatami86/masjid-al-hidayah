@@ -21,6 +21,7 @@ import {
   TrendingUp,
   TrendingDown,
   ChevronDown,
+  CreditCard,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -50,7 +51,7 @@ const navGroups = [
   {
     label: "Keuangan",
     items: [
-      // { href: "/admin/rekening", label: "Nomor Rekening", icon: CreditCard }, // belum dipakai
+      { href: "/admin/rekening", label: "Nomor Rekening", icon: CreditCard },
     ],
     withTransaksi: true,
   },

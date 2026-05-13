@@ -39,7 +39,7 @@ erDiagram
     }
 
     REKENING {
-        uuid    id      PK "Primary Key — belum dipakai"
+        uuid    id      PK "Primary Key"
         text    bank    "NOT NULL"
         text    norek   "NOT NULL"
         text    atas    "NOT NULL — nama pemilik rekening"
@@ -48,7 +48,7 @@ erDiagram
     }
 
     PENGATURAN {
-        text key   PK "Primary Key — belum dipakai"
+        text key   PK "Primary Key"
         text value "nullable — nilai setting"
     }
 
@@ -143,9 +143,9 @@ Menyimpan seluruh transaksi keuangan masjid (pemasukan & pengeluaran).
 
 ---
 
-### REKENING *(belum dipakai)*
+### REKENING
 
-Menyimpan nomor rekening bank untuk halaman donasi/wakaf. Tabel sudah tersedia di DB namun fitur donasi belum diaktifkan di UI.
+Menyimpan nomor rekening bank untuk halaman donasi/wakaf yang ditampilkan di halaman publik.
 
 | Kolom    | Tipe    | Keterangan                                    |
 | -------- | ------- | --------------------------------------------- |
@@ -158,9 +158,9 @@ Menyimpan nomor rekening bank untuk halaman donasi/wakaf. Tabel sudah tersedia d
 
 ---
 
-### PENGATURAN *(belum dipakai)*
+### PENGATURAN
 
-Menyimpan konfigurasi global sistem (key-value). Dipersiapkan untuk URL gambar QRIS namun fitur donasi belum diaktifkan.
+Menyimpan konfigurasi global sistem (key-value). Digunakan untuk menyimpan URL gambar QRIS donasi.
 
 | Kolom   | Tipe | Keterangan                                      |
 | ------- | ---- | ----------------------------------------------- |
@@ -339,10 +339,12 @@ flowchart TD
         A2 -- Sudah --> A6
         A6 --> A7{Pilih Menu}
         A7 -- Konten --> A8[Khatib · Jadwal · Berita\nGaleri · Program Unggulan]
-        A7 -- Keuangan --> A9{Sub-Menu Transaksi}
-        A9 -- Pemasukan --> A10[Kelola Transaksi Masuk]
-        A9 -- Pengeluaran --> A11[Kelola Transaksi Keluar]
-        A9 -- Arus Kas --> A12[Laporan Alur Kas Bulanan]
+        A7 -- Keuangan --> A9{Sub-Menu}
+        A9 -- Transaksi --> A10{Sub-Menu Transaksi}
+        A10 -- Pemasukan --> A10a[Kelola Transaksi Masuk]
+        A10 -- Pengeluaran --> A10b[Kelola Transaksi Keluar]
+        A10 -- Arus Kas --> A10c[Laporan Alur Kas Bulanan]
+        A9 -- Nomor Rekening --> A11[Kelola Rekening & QRIS]
     end
 ```
 
@@ -507,18 +509,40 @@ flowchart TD
 
 ---
 
-### 6. Alur Donasi *(belum diaktifkan)*
-
-> Fitur donasi (nomor rekening & QRIS) sudah tersedia di database (`REKENING`, `PENGATURAN`) dan kode (`/admin/rekening`) namun sementara disembunyikan dari UI. Untuk mengaktifkan, uncomment bagian terkait di `AdminSidebar.tsx` dan `KontakSection.tsx`.
+### 6. Alur Donasi
 
 ```mermaid
 flowchart TD
-    subgraph STATUS["⏸ Belum Diaktifkan"]
-        S1([Fitur Donasi]) --> S2[Nomor Rekening & QRIS]
-        S2 --> S3[Tersedia di DB tabel REKENING & PENGATURAN]
-        S3 --> S4[Halaman admin/rekening sudah ada]
-        S4 --> S5[Aktifkan: uncomment di AdminSidebar & KontakSection]
+    subgraph DONATUR["🙋 Donatur"]
+        D1([Buka Halaman Donasi\ndi Beranda — section Kontak]) --> D2{Pilih Metode}
+        D2 -- Transfer Bank --> D3[Lihat No. Rekening\nSalin & Transfer]
+        D2 -- QRIS --> D4[Scan QR Code\nBayar via Bank / E-Wallet]
+        D3 --> D5[Selesai ✓]
+        D4 --> D5
     end
+
+    subgraph ADMIN["👤 Admin"]
+        D5 --> A1[Cek Notifikasi Mutasi]
+        A1 --> A2([Buka Admin Keuangan\nMenu Pemasukan])
+        A2 --> A3[Tambah Transaksi Pemasukan\nKategori: Donasi Transfer]
+        A3 --> A4[(TRANSAKSI\nmasuk · Donasi Transfer)]
+    end
+
+    subgraph PUBLIK["👥 Pengunjung"]
+        A4 --> P1[Laporan Keuangan\ndiperbarui otomatis]
+    end
+
+    subgraph ADMIN_REKENING["👤 Admin — Nomor Rekening"]
+        R1([Buka Menu Nomor Rekening]) --> R2{Pilih Aksi}
+        R2 -- Tambah --> R3[Isi Bank, No. Rekening\nNama Pemilik, Urutan]
+        R3 --> R4[Simpan ke DB]
+        R2 -- Upload QRIS --> R5[Upload Gambar QR]
+        R5 --> R6[Simpan URL ke PENGATURAN]
+        R2 -- Toggle Aktif --> R7[Tampil / Sembunyikan di Beranda]
+    end
+
+    R4 --> D3
+    R6 --> D4
 ```
 
 ---
@@ -580,7 +604,7 @@ Semua tabel menggunakan Row Level Security (RLS) Supabase.
 | Bucket           | Digunakan oleh         | Isi                                   | Akses  | Status        |
 | ---------------- | ---------------------- | ------------------------------------- | ------ | ------------- |
 | `khatib-photos`  | Tabel `khatib`         | Foto profil khatib/ustadz             | Public | Aktif         |
-| `qris`           | Tabel `pengaturan`     | Gambar QRIS donasi masjid             | Public | Belum dipakai |
+| `qris`           | Tabel `pengaturan`     | Gambar QRIS donasi masjid             | Public | Aktif         |
 | `program-images` | Tabel `program_images` | Foto program unggulan di beranda      | Public | Aktif         |
 | `galeri`         | Tabel `galeri`         | Foto dokumentasi kegiatan masjid      | Public | Aktif         |
 
@@ -590,7 +614,7 @@ Semua tabel menggunakan Row Level Security (RLS) Supabase.
 
 | URL                 | Keterangan                                                    |
 | ------------------- | ------------------------------------------------------------- |
-| `/`                 | Beranda — jadwal sholat, kegiatan, galeri preview, berita, kontak |
+| `/`                 | Beranda — jadwal sholat, kegiatan, galeri preview, berita, donasi & kontak |
 | `/berita`           | Daftar semua berita & pengumuman                              |
 | `/berita/[slug]`    | Detail berita                                                 |
 | `/jadwal-kegiatan`  | Semua jadwal kegiatan mendatang & arsip                       |
@@ -613,5 +637,5 @@ Semua tabel menggunakan Row Level Security (RLS) Supabase.
 | `/admin/keuangan/pemasukan`      | Catat & kelola transaksi pemasukan                      | Aktif         |
 | `/admin/keuangan/pengeluaran`    | Catat & kelola transaksi pengeluaran                    | Aktif         |
 | `/admin/laporan`                 | Laporan alur kas bulanan + widget transaksi terbaru     | Aktif         |
-| `/admin/rekening`                | Kelola nomor rekening & QRIS                            | Belum dipakai |
+| `/admin/rekening`                | Kelola nomor rekening & QRIS                            | Aktif         |
 | `/admin/akun`                    | Kelola akun admin (tambah / edit / nonaktif / hapus)    | Belum dipakai |
