@@ -17,39 +17,26 @@ import {
   Users,
   Globe,
   type LucideIcon,
+  ArrowUpRight,
 } from "lucide-react";
 
 function rupiah(n: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
 }
 
-const MONTHS_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const MONTHS_ID = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
 
 const BADGE: Record<string, string> = {
-  "Khutbah Jumat":    "bg-amber-100 text-amber-700",
-  "Kajian Sabtu":     "bg-blue-100 text-blue-700",
-  "Tahsin Al-Qur'an": "bg-emerald-100 text-emerald-700",
-  "TPA Al-Hidayah":   "bg-purple-100 text-purple-700",
-  "Tahfidz":          "bg-pink-100 text-pink-700",
-  "Maulid & Kegiatan Khusus": "bg-red-100 text-red-700",
+  "Khutbah Jumat":          "bg-amber-50 text-amber-700 border border-amber-100",
+  "Kajian Sabtu":           "bg-sky-50 text-sky-700 border border-sky-100",
+  "Tahsin Al-Qur'an":       "bg-emerald-50 text-emerald-700 border border-emerald-100",
+  "TPA Al-Hidayah":         "bg-violet-50 text-violet-700 border border-violet-100",
+  "Tahfidz":                "bg-pink-50 text-pink-700 border border-pink-100",
+  "Maulid & Kegiatan Khusus": "bg-rose-50 text-rose-700 border border-rose-100",
 };
 
-interface StatCard {
-  label: string;
-  value: string;
-  sub: string;
-  color: string;
-  iconColor: string;
-  icon: LucideIcon;
-}
-
-interface QuickAction {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  color: string;
-  iconColor: string;
-}
+interface StatCard { label: string; value: string; sub: string; icon: LucideIcon; iconColor: string; }
+interface QuickAction { href: string; label: string; icon: LucideIcon; }
 
 export default function DashboardPage() {
   const [khatib,    setKhatib]    = useState<Khatib[]>([]);
@@ -80,116 +67,125 @@ export default function DashboardPage() {
   const saldo = totalMasuk - totalKeluar;
 
   const stats: StatCard[] = [
-    { label: "Khatib Aktif",    value: loading ? "…" : String(khatibAktif),    sub: `dari ${khatib.length} terdaftar`, color: "bg-blue-50",    iconColor: "text-blue-500",    icon: UserCheck    },
-    { label: "Jadwal Terdekat", value: loading ? "…" : String(upcoming.length), sub: "kegiatan akan datang",            color: "bg-purple-50",  iconColor: "text-purple-500",  icon: CalendarCheck },
-    { label: "Total Pemasukan", value: loading ? "…" : rupiah(totalMasuk),      sub: "sepanjang tahun",                 color: "bg-emerald-50", iconColor: "text-emerald-500", icon: TrendingUp    },
-    { label: "Saldo Kas",       value: loading ? "…" : rupiah(saldo),           sub: "per hari ini",                    color: "bg-amber-50",   iconColor: "text-amber-500",   icon: Wallet        },
+    { label: "Khatib Aktif",    value: loading ? "—" : String(khatibAktif),    sub: `${khatib.length} terdaftar`,  icon: UserCheck,    iconColor: "text-blue-500"    },
+    { label: "Jadwal Terdekat", value: loading ? "—" : String(upcoming.length), sub: "kegiatan akan datang",        icon: CalendarCheck, iconColor: "text-violet-500"  },
+    { label: "Total Pemasukan", value: loading ? "—" : rupiah(totalMasuk),      sub: "sepanjang periode",           icon: TrendingUp,   iconColor: "text-emerald-600" },
+    { label: "Saldo Kas",       value: loading ? "—" : rupiah(saldo),           sub: "per hari ini",                icon: Wallet,       iconColor: "text-stone-500"   },
   ];
 
   const quickActions: QuickAction[] = [
-    { href: "/admin/khatib",     label: "Tambah Khatib",  icon: UserPlus,    color: "hover:bg-blue-50 hover:border-blue-200",     iconColor: "text-blue-500"    },
-    { href: "/admin/jadwal",     label: "Buat Jadwal",    icon: CalendarPlus, color: "hover:bg-purple-50 hover:border-purple-200", iconColor: "text-purple-500"  },
-    { href: "/admin/keuangan",   label: "Input Keuangan", icon: PlusCircle,  color: "hover:bg-emerald-50 hover:border-emerald-200", iconColor: "text-emerald-500" },
-    { href: "/laporan-keuangan", label: "Laporan Publik", icon: BarChart2,   color: "hover:bg-amber-50 hover:border-amber-200",   iconColor: "text-amber-500"   },
-    { href: "/admin/khatib",     label: "Daftar Ustadz",  icon: Users,       color: "hover:bg-blue-50 hover:border-blue-200",     iconColor: "text-blue-400"    },
-    { href: "/",                 label: "Lihat Website",  icon: Globe,       color: "hover:bg-gray-100 hover:border-gray-300",    iconColor: "text-gray-400"    },
+    { href: "/admin/khatib",     label: "Tambah Khatib",  icon: UserPlus    },
+    { href: "/admin/jadwal",     label: "Buat Jadwal",    icon: CalendarPlus },
+    { href: "/admin/keuangan",   label: "Input Keuangan", icon: PlusCircle  },
+    { href: "/admin/laporan",    label: "Arus Kas",       icon: BarChart2   },
+    { href: "/admin/khatib",     label: "Daftar Ustadz",  icon: Users       },
+    { href: "/",                 label: "Lihat Website",  icon: Globe       },
   ];
+
+  const today = new Date().toLocaleDateString("id-ID", {
+    weekday: "long", day: "numeric", month: "long", year: "numeric",
+  });
 
   return (
     <AdminGuard>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-gray-50/70">
         <AdminSidebar />
 
         <main className="flex-1 md:ml-56 pt-14 md:pt-0">
-          <div className="max-w-5xl mx-auto px-5 py-8 space-y-8">
+          <div className="max-w-5xl mx-auto px-5 py-8 space-y-7">
+
             {/* Header */}
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-sm text-gray-500 mt-1">
-                Selamat datang kembali, Administrator —{" "}
-                {new Date().toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-              </p>
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+                <p className="text-[12.5px] text-gray-400 mt-0.5">{today}</p>
+              </div>
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {stats.map((s) => {
                 const Icon = s.icon;
                 return (
-                  <div key={s.label} className="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3">
-                    <div className={`w-9 h-9 rounded-xl ${s.color} flex items-center justify-center`}>
-                      <Icon size={18} className={s.iconColor} strokeWidth={2} />
+                  <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon size={14} className={s.iconColor} strokeWidth={1.8} />
+                      <p className="text-[11px] text-gray-400 font-medium truncate">{s.label}</p>
                     </div>
-                    <div>
-                      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide">{s.label}</p>
-                      <p className="text-xl font-bold text-gray-900 leading-tight mt-0.5 break-all">{s.value}</p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">{s.sub}</p>
-                    </div>
+                    <p className="text-[19px] font-bold text-gray-900 leading-none break-all">{s.value}</p>
+                    <p className="text-[11px] text-gray-400 mt-1.5">{s.sub}</p>
                   </div>
                 );
               })}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Jadwal Terdekat */}
-              <div className="bg-white rounded-2xl shadow-sm p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+              {/* Jadwal Terdekat — lebih lebar */}
+              <div className="lg:col-span-3 bg-white rounded-xl border border-gray-100 p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-[15px] text-gray-800">Jadwal Terdekat</h2>
-                  <Link href="/admin/jadwal" className="text-[12px] text-amber-600 font-semibold hover:underline">Kelola →</Link>
+                  <h2 className="font-semibold text-[14px] text-gray-800">Jadwal Terdekat</h2>
+                  <Link href="/admin/jadwal" className="flex items-center gap-0.5 text-[11.5px] text-gray-400 hover:text-gray-700 transition-colors font-medium">
+                    Kelola <ArrowUpRight size={12} strokeWidth={2} />
+                  </Link>
                 </div>
                 {loading ? (
-                  <p className="text-sm text-gray-400 py-4 text-center">Memuat…</p>
+                  <div className="space-y-3">
+                    {[1,2,3].map(i => <div key={i} className="h-12 bg-gray-50 rounded-lg animate-pulse" />)}
+                  </div>
                 ) : upcoming.length === 0 ? (
-                  <p className="text-sm text-gray-400 py-4 text-center">Belum ada jadwal.</p>
+                  <p className="text-[12.5px] text-gray-400 py-6 text-center">Belum ada jadwal.</p>
                 ) : (
-                  <ul className="space-y-3">
-                    {upcoming.map((j) => (
-                      <li key={j.id} className="flex gap-3 items-start">
-                        <div className="w-10 h-10 rounded-xl bg-amber-50 flex flex-col items-center justify-center shrink-0">
-                          <span className="text-[11px] font-bold text-amber-600 leading-none">
-                            {new Date(j.tanggal + "T00:00").getDate()}
-                          </span>
-                          <span className="text-[9px] text-amber-500 uppercase">
-                            {MONTHS_ID[new Date(j.tanggal + "T00:00").getMonth()].slice(0, 3)}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${BADGE[j.jenisKegiatan] ?? "bg-gray-100 text-gray-600"}`}>
-                              {j.jenisKegiatan}
-                            </span>
-                            <span className="text-[11px] text-gray-400">{j.waktu} WIB</span>
+                  <ul className="divide-y divide-gray-50">
+                    {upcoming.map((j) => {
+                      const d = new Date(j.tanggal + "T00:00");
+                      return (
+                        <li key={j.id} className="flex gap-3 items-center py-2.5 first:pt-0 last:pb-0">
+                          <div className="w-9 shrink-0 text-center">
+                            <p className="text-[17px] font-bold text-gray-800 leading-none">{d.getDate()}</p>
+                            <p className="text-[9.5px] text-gray-400 uppercase font-medium mt-0.5">{MONTHS_ID[d.getMonth()]}</p>
                           </div>
-                          <p className="text-[13px] font-semibold text-gray-800 mt-0.5 truncate">{j.topik}</p>
-                          <p className="text-[12px] text-gray-500 truncate">{j.khatibNama}</p>
-                        </div>
-                      </li>
-                    ))}
+                          <div className="w-px h-8 bg-gray-100 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${BADGE[j.jenisKegiatan] ?? "bg-gray-50 text-gray-500 border border-gray-100"}`}>
+                                {j.jenisKegiatan}
+                              </span>
+                              <span className="text-[10.5px] text-gray-400">{j.waktu}</span>
+                            </div>
+                            <p className="text-[12.5px] font-semibold text-gray-700 truncate">{j.topik}</p>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
 
-              {/* Transaksi Terbaru */}
-              <div className="bg-white rounded-2xl shadow-sm p-6">
+              {/* Transaksi Terbaru — lebih sempit */}
+              <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-[15px] text-gray-800">Transaksi Terbaru</h2>
-                  <Link href="/admin/keuangan" className="text-[12px] text-amber-600 font-semibold hover:underline">Kelola →</Link>
+                  <h2 className="font-semibold text-[14px] text-gray-800">Transaksi Terbaru</h2>
+                  <Link href="/admin/keuangan" className="flex items-center gap-0.5 text-[11.5px] text-gray-400 hover:text-gray-700 transition-colors font-medium">
+                    Kelola <ArrowUpRight size={12} strokeWidth={2} />
+                  </Link>
                 </div>
                 {loading ? (
-                  <p className="text-sm text-gray-400 py-4 text-center">Memuat…</p>
+                  <div className="space-y-3">
+                    {[1,2,3,4].map(i => <div key={i} className="h-8 bg-gray-50 rounded-lg animate-pulse" />)}
+                  </div>
                 ) : (
-                  <ul className="space-y-2">
+                  <ul className="space-y-0">
                     {recentTx.map((t) => (
-                      <li key={t.id} className="flex items-center justify-between py-1.5 border-b border-gray-50 last:border-0">
-                        <div className="flex-1 min-w-0 pr-3">
-                          <p className="text-[13px] text-gray-700 truncate">{t.keterangan}</p>
-                          <p className="text-[11px] text-gray-400">
-                            {new Date(t.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
+                      <li key={t.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <p className="text-[12px] text-gray-700 truncate font-medium">{t.keterangan}</p>
+                          <p className="text-[10.5px] text-gray-400 mt-0.5">
+                            {new Date(t.tanggal).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}
                             {" · "}{t.kategori}
                           </p>
                         </div>
-                        <span className={`text-[13px] font-bold shrink-0 ${t.jenis === "masuk" ? "text-emerald-600" : "text-red-500"}`}>
-                          {t.jenis === "masuk" ? "+" : "-"}{rupiah(t.jumlah)}
+                        <span className={`text-[12px] font-bold shrink-0 tabular-nums ${t.jenis === "masuk" ? "text-emerald-600" : "text-red-500"}`}>
+                          {t.jenis === "masuk" ? "+" : "−"}{rupiah(t.jumlah)}
                         </span>
                       </li>
                     ))}
@@ -199,21 +195,25 @@ export default function DashboardPage() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h2 className="font-bold text-[15px] text-gray-800 mb-4">Aksi Cepat</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="bg-white rounded-xl border border-gray-100 p-5">
+              <h2 className="font-semibold text-[14px] text-gray-800 mb-3">Aksi Cepat</h2>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {quickActions.map((a) => {
                   const Icon = a.icon;
                   return (
-                    <Link key={a.label} href={a.href}
-                      className={`flex items-center gap-3 p-3 rounded-xl border border-gray-100 transition-all text-[13.5px] font-medium text-gray-700 ${a.color}`}>
-                      <Icon size={18} className={a.iconColor} strokeWidth={1.8} />
-                      {a.label}
+                    <Link
+                      key={a.label}
+                      href={a.href}
+                      className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all text-center"
+                    >
+                      <Icon size={16} className="text-gray-500" strokeWidth={1.8} />
+                      <span className="text-[11px] font-medium text-gray-600 leading-tight">{a.label}</span>
                     </Link>
                   );
                 })}
               </div>
             </div>
+
           </div>
         </main>
       </div>

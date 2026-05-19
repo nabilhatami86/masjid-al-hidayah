@@ -9,7 +9,7 @@ export const metadata = {
 
 export default function ZakatPage() {
   return (
-    <div className="min-h-screen bg-[#EDE8DF]">
+    <div className="min-h-screen bg-white">
       <Sidebar />
       <div className="pt-[65px]">
         <ZakatClient />

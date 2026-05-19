@@ -73,10 +73,10 @@ function NavLink({
     <Link
       href={href}
       onClick={onClose}
-      className={`flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${
+      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
         active
           ? "bg-amber-500 text-white shadow-sm"
-          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
       }`}
     >
       <Icon size={16} strokeWidth={active ? 2.5 : 1.8} />
@@ -96,10 +96,10 @@ function TransaksiNav({ pathname, onClose }: { pathname: string; onClose: () => 
       {/* Parent button */}
       <button
         onClick={() => setOpen((p) => !p)}
-        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all ${
+        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
           isAnySubActive
             ? "bg-amber-50 text-amber-700"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+            : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
         }`}
       >
         <Wallet size={16} strokeWidth={isAnySubActive ? 2.5 : 1.8} />
@@ -121,10 +121,10 @@ function TransaksiNav({ pathname, onClose }: { pathname: string; onClose: () => 
                 key={href}
                 href={href}
                 onClick={onClose}
-                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-[12.5px] font-medium transition-all ${
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[12.5px] font-medium transition-all ${
                   active
                     ? "bg-amber-500 text-white shadow-sm"
-                    : `text-gray-500 hover:bg-gray-100 hover:text-gray-800`
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
                 }`}
               >
                 <Icon size={14} strokeWidth={active ? 2.5 : 1.8} className={active ? "" : color} />
@@ -151,8 +151,8 @@ function SidebarContent({
 
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 shadow-sm">
-          <Image src="/logo.png" width={22} height={22} alt="Logo" />
+        <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
+          <Image src="/logo.png" width={18} height={18} alt="Logo" />
         </div>
         <div>
           <p className="font-bold text-[13px] leading-tight text-gray-900">Masjid Al-Hidayah</p>
@@ -250,7 +250,7 @@ export default function AdminSidebar() {
       <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-white border-b border-gray-100 flex items-center justify-between px-4 h-14">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center">
-            <Image src="/logo.png" width={18} height={18} alt="Logo" />
+            <Image src="/logo.png" width={16} height={16} alt="Logo" />
           </div>
           <span className="font-bold text-[13px] text-gray-900">Admin Panel</span>
         </div>

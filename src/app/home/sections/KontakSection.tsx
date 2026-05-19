@@ -28,7 +28,7 @@ const CONTACT_CARDS = [
     icon: Phone,
     label: "Hubungi Kami",
     lines: [
-      { icon: MessageCircle, text: "0812-3456-7890",        href: "https://wa.me/6281234567890" },
+      { icon: MessageCircle, text: "0812-3456-7890",         href: "https://wa.me/6281234567890" },
       { icon: Mail,          text: "info@masjidalhidayah.id", href: "mailto:info@masjidalhidayah.id" },
     ],
     action: null,
@@ -47,50 +47,42 @@ const CONTACT_CARDS = [
 export default function KontakSection() {
   return (
     <section id="contact" className="px-4 py-16 bg-white">
-      <div className="max-w-5xl mx-auto space-y-10">
+      <div className="max-w-5xl mx-auto">
 
         {/* Header */}
-        <div className="text-center">
-          <span className="inline-block text-[11px] font-bold uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1 rounded-full mb-3">
-            Donasi & Kontak
-          </span>
-          <h2 className="text-3xl font-bold text-gray-900">Donasi &amp; Hubungi Kami</h2>
-          <p className="text-gray-400 text-[14px] mt-2 max-w-md mx-auto leading-relaxed">
+        <div className="mb-10">
+          <p className="text-stone-400 font-medium text-[11px] uppercase tracking-[0.22em] mb-2">Donasi &amp; Kontak</p>
+          <h2 className="text-[28px] font-bold text-gray-900 tracking-tight leading-tight">Donasi &amp; Hubungi Kami</h2>
+          <p className="text-gray-400 text-[13.5px] mt-2 max-w-sm leading-relaxed">
             Dukung kegiatan masjid dan jangan ragu untuk menghubungi kami.
           </p>
         </div>
 
-        {/* 2-kolom: Donasi kiri, Kontak kanan */}
-        <div className="grid md:grid-cols-2 gap-6 items-start">
+        {/* 2-kolom */}
+        <div className="grid md:grid-cols-2 gap-8 items-start">
 
           {/* Kiri — Donasi */}
           <DonasiSection />
 
           {/* Kanan — Info Kontak */}
-          <div className="space-y-3">
+          <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden">
             {CONTACT_CARDS.map((card) => {
               const CardIcon = card.icon;
               return (
-                <div
-                  key={card.label}
-                  className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex flex-col gap-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-                      <CardIcon size={15} className="text-amber-600" strokeWidth={2} />
-                    </div>
-                    <p className="font-bold text-[12px] text-gray-600 uppercase tracking-wide">{card.label}</p>
+                <div key={card.label} className="px-5 py-4">
+                  <div className="flex items-center gap-2.5 mb-2.5">
+                    <CardIcon size={14} className="text-stone-400 shrink-0" strokeWidth={1.8} />
+                    <p className="font-semibold text-[11.5px] text-gray-500 uppercase tracking-[0.15em]">{card.label}</p>
                   </div>
 
-                  <div className="space-y-1.5 pl-1">
+                  <div className="space-y-1.5 ml-0.5">
                     {card.lines.map((line, i) => {
                       const LineIcon = "icon" in line ? line.icon : null;
                       if ("href" in line && line.href) {
                         return (
-                          <a key={i} href={line.href} target="_blank" rel="noopener noreferrer"
-                            className="flex items-center gap-2 group">
-                            {LineIcon && <LineIcon size={13} className="text-gray-400 shrink-0" strokeWidth={1.8} />}
-                            <span className="text-[13px] text-gray-600 group-hover:text-amber-600 group-hover:underline underline-offset-2 transition-colors">
+                          <a key={i} href={line.href} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
+                            {LineIcon && <LineIcon size={12} className="text-gray-400 shrink-0" strokeWidth={1.8} />}
+                            <span className="text-[13px] text-gray-600 group-hover:text-gray-900 transition-colors underline-offset-2 group-hover:underline">
                               {line.text}
                             </span>
                           </a>
@@ -98,7 +90,7 @@ export default function KontakSection() {
                       }
                       return (
                         <div key={i} className="flex items-start gap-2">
-                          {LineIcon && <LineIcon size={13} className="text-gray-400 mt-0.5 shrink-0" strokeWidth={1.8} />}
+                          {LineIcon && <LineIcon size={12} className="text-gray-400 mt-0.5 shrink-0" strokeWidth={1.8} />}
                           <span className="text-[13px] text-gray-600 leading-snug">{line.text}</span>
                         </div>
                       );
@@ -107,8 +99,8 @@ export default function KontakSection() {
 
                   {card.action && (
                     <a href={card.action.href} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-[12px] font-semibold text-amber-600 hover:text-amber-700 transition-colors">
-                      <card.action.icon size={12} strokeWidth={2.5} />
+                      className="inline-flex items-center gap-1.5 mt-2.5 text-[12px] font-medium text-gray-400 hover:text-gray-700 transition-colors">
+                      <card.action.icon size={11} strokeWidth={2} />
                       {card.action.label}
                     </a>
                   )}
@@ -116,13 +108,12 @@ export default function KontakSection() {
               );
             })}
 
-            <Link
-              href="/admin"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border border-dashed border-gray-200 text-[12px] text-gray-400 hover:border-amber-300 hover:text-amber-500 transition-colors"
-            >
-              <Settings size={14} strokeWidth={1.8} />
-              Panel Admin Masjid
-            </Link>
+            <div className="px-5 py-3">
+              <Link href="/admin" className="flex items-center gap-2 text-[12px] text-gray-400 hover:text-gray-700 transition-colors">
+                <Settings size={13} strokeWidth={1.8} />
+                Panel Admin Masjid
+              </Link>
+            </div>
           </div>
         </div>
 

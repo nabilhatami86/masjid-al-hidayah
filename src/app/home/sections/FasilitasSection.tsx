@@ -6,17 +6,25 @@ export default function FasilitasSection() {
     <section id="fasilitas" className="px-4 py-16 bg-white">
       <div className="max-w-4xl mx-auto">
         <SectionHeader label="Sarana & Prasarana" title="Fasilitas Masjid" center />
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {FASILITAS.map((f) => (
-            <div
-              key={f.title}
-              className="bg-gray-50 rounded-2xl p-5 hover:shadow-sm transition-shadow border border-gray-100"
-            >
-              <div className="mb-3">
-                <f.icon size={28} className="text-amber-600" />
-              </div>
-              <h4 className="font-bold text-[14px] text-gray-900 mb-1">{f.title}</h4>
-              <p className="text-[12px] text-gray-500 leading-relaxed">{f.desc}</p>
+
+        {/* Row 1 — 3 kolom setara */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-100 rounded-2xl overflow-hidden border border-gray-100">
+          {FASILITAS.slice(0, 3).map((f) => (
+            <div key={f.title} className="bg-white px-6 py-5 hover:bg-gray-50/70 transition-colors">
+              <f.icon size={22} className="text-stone-400 mb-3" strokeWidth={1.6} />
+              <h4 className="font-semibold text-[14px] text-gray-800 mb-1">{f.title}</h4>
+              <p className="text-[12.5px] text-gray-500 leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Row 2 — 3 kolom setara */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-gray-100 rounded-2xl overflow-hidden border border-gray-100 mt-3">
+          {FASILITAS.slice(3).map((f) => (
+            <div key={f.title} className="bg-white px-6 py-5 hover:bg-gray-50/70 transition-colors">
+              <f.icon size={22} className="text-stone-400 mb-3" strokeWidth={1.6} />
+              <h4 className="font-semibold text-[14px] text-gray-800 mb-1">{f.title}</h4>
+              <p className="text-[12.5px] text-gray-500 leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
