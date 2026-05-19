@@ -330,18 +330,24 @@ const INFO_CARDS = [
     title: "Dasar Hukum",
     desc: "Zakat wajib dikeluarkan berdasarkan Al-Qur'an dan Hadis.",
     link: "Lihat Dalil",
+    href: "https://quran.com/9/103",
+    external: true,
   },
   {
     icon: Users,
     title: "Untuk Siapa Zakat?",
     desc: "Zakat diberikan kepada 8 golongan yang berhak menerima.",
     link: "Lihat Mustahik",
+    href: "https://baznas.go.id",
+    external: true,
   },
   {
     icon: HeartHandshake,
     title: "Salurkan Zakat Anda",
     desc: "Tunaikan zakat melalui Masjid Al-Hidayah dengan mudah.",
     link: "Salurkan Sekarang",
+    href: "/#contact",
+    external: false,
   },
 ];
 
@@ -450,16 +456,31 @@ export default function ZakatClient() {
           {INFO_CARDS.map((card) => {
             const CardIcon = card.icon;
             return (
-              <div key={card.title} className="bg-white rounded-2xl border border-stone-200/60 p-5">
+              <div key={card.title} className="bg-white rounded-2xl border border-stone-200/60 p-5 flex flex-col">
                 <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center mb-3">
                   <CardIcon size={16} className="text-amber-600" strokeWidth={1.8} />
                 </div>
                 <h3 className="font-bold text-[14px] text-gray-800 mb-1">{card.title}</h3>
-                <p className="text-[12.5px] text-stone-500 leading-relaxed mb-3">{card.desc}</p>
-                <button className="flex items-center gap-1 text-[12.5px] font-semibold text-amber-600 hover:text-amber-700 transition-colors">
-                  {card.link}
-                  <ArrowRight size={12} strokeWidth={2.5} />
-                </button>
+                <p className="text-[12.5px] text-stone-500 leading-relaxed mb-3 flex-1">{card.desc}</p>
+                {card.external ? (
+                  <a
+                    href={card.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-[12.5px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+                  >
+                    {card.link}
+                    <ArrowRight size={12} strokeWidth={2.5} />
+                  </a>
+                ) : (
+                  <Link
+                    href={card.href}
+                    className="flex items-center gap-1 text-[12.5px] font-semibold text-amber-600 hover:text-amber-700 transition-colors"
+                  >
+                    {card.link}
+                    <ArrowRight size={12} strokeWidth={2.5} />
+                  </Link>
+                )}
               </div>
             );
           })}

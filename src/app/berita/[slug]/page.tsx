@@ -32,7 +32,7 @@ export default async function BeritaDetailPage({ params }: { params: Promise<{ s
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
       <Sidebar />
-      <div className="pt-[65px]">
+      <div className="pt-[97px]">
         <div className="max-w-2xl mx-auto px-4 py-10">
 
           <Link

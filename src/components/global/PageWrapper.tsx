@@ -10,7 +10,7 @@ export default function PageWrapper({ children, className }: Props) {
   return (
     <div className="min-h-screen bg-[#EDE8DF]">
       <Sidebar />
-      <div className={`pt-[65px] ${className ?? ""}`}>
+      <div className={`pt-[97px] ${className ?? ""}`}>
         {children}
       </div>
       <Footer />

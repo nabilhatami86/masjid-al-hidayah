@@ -22,7 +22,7 @@ export default async function BeritaListPage() {
 
       <Sidebar />
 
-      <main className="relative pt-[65px]">
+      <main className="relative pt-[97px]">
         <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
           <Link
             href="/#berita"

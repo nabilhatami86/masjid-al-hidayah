@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function HeroSection() {
   return (
-    <section className="pt-[65px]">
+    <section className="pt-[97px]">
       <div className="relative w-full h-170 md:h-215">
         <Image
           src="/background.png"
