@@ -91,6 +91,84 @@ flowchart LR
 
 ## 2. Activity Diagrams
 
+### 2.0 Activity Diagram: Gambaran Umum Sistem (Overview)
+
+```mermaid
+flowchart TD
+    S([Mulai]) --> ROLE{Siapa\nPengguna?}
+
+    %% ── JALUR PENGUNJUNG ──────────────────────────────────────────
+    ROLE -- Pengunjung --> P_BUKA[Buka Website\nMasjid Al-Hidayah]
+    P_BUKA --> P_MENU{Pilih Halaman}
+
+    P_MENU -- Beranda --> P_BERANDA[Lihat Info Masjid\nJadwal Sholat & Program Unggulan]
+    P_BERANDA --> P_SUB{Lanjut ke?}
+    P_SUB -- Berita --> P_BERITA_D[Lihat Detail Berita\n/berita/slug]
+    P_SUB -- Donasi --> P_DONASI[Lihat Rekening Bank & QRIS\nSalin & Transfer]
+    P_SUB -- Galeri --> P_GAL_P[Lihat Galeri\nFilter & Lightbox]
+
+    P_MENU -- Berita --> P_BERITA[Daftar Semua Berita\n/berita]
+    P_BERITA --> P_BERITA_D
+
+    P_MENU -- Jadwal Kegiatan --> P_JADWAL[Lihat Jadwal Mendatang\n& Arsip Kegiatan]
+
+    P_MENU -- Jadwal Sholat --> P_SHOLAT[Jadwal Sholat Bulanan\nKota Surabaya]
+
+    P_MENU -- Laporan Keuangan --> P_LAPORAN[Lihat Laporan Keuangan\nFilter Tahun & Bulan]
+    P_LAPORAN --> P_EXP{Export?}
+    P_EXP -- Ya --> P_EXPORT[Download CSV / Excel / Print]
+    P_EXP -- Tidak --> EP([Selesai])
+
+    P_MENU -- Galeri --> P_GAL_P
+
+    %% ── JALUR ADMIN ───────────────────────────────────────────────
+    ROLE -- Admin --> A_LOGIN[Buka /admin/login\nMasukkan Kredensial]
+    A_LOGIN --> A_AUTH{Autentikasi\nBerhasil?}
+    A_AUTH -- Tidak --> A_ERR[Tampilkan Pesan Error]
+    A_ERR --> A_LOGIN
+    A_AUTH -- Ya --> A_DASH[Dashboard Admin\n/admin/dashboard]
+    A_DASH --> A_MENU{Pilih Menu\nSidebar}
+
+    A_MENU -- Konten --> A_KONTEN{Sub-Menu\nKonten}
+    A_KONTEN -- Khatib --> A_KHATIB[Kelola Data Khatib\nTambah / Edit / Hapus]
+    A_KONTEN -- Jadwal --> A_JADWAL[Kelola Jadwal Kegiatan\nTambah / Edit / Hapus]
+    A_KONTEN -- Berita --> A_BERITA[Kelola Berita & Pengumuman\nTambah / Edit / Hapus]
+    A_KONTEN -- Galeri --> A_GALERI[Upload & Kelola Foto Galeri\nHapus dari Storage & DB]
+    A_KONTEN -- Program Unggulan --> A_PROG[Upload Foto\nProgram Unggulan]
+
+    A_MENU -- Keuangan --> A_KEU{Sub-Menu\nKeuangan}
+    A_KEU -- Pemasukan --> A_PMS[Catat & Kelola\nTransaksi Masuk]
+    A_KEU -- Pengeluaran --> A_PLG[Catat & Kelola\nTransaksi Keluar]
+    A_KEU -- Arus Kas --> A_AK[Laporan Arus Kas Bulanan\nFilter Tahun & Export]
+    A_KEU -- Rekening --> A_REK[Kelola Rekening Bank\n& Upload QRIS]
+
+    A_MENU -- Akun --> A_AKUN[Kelola Akun Admin\nTambah / Edit / Nonaktif / Hapus]
+
+    A_MENU -- Logout --> A_LOGOUT[Hapus Session Cookie\nRedirect ke /admin/login]
+
+    %% ── TITIK SELESAI ─────────────────────────────────────────────
+    P_BERANDA --> EP
+    P_BERITA_D --> EP
+    P_DONASI --> EP
+    P_GAL_P --> EP
+    P_JADWAL --> EP
+    P_SHOLAT --> EP
+    P_EXPORT --> EP
+    A_KHATIB --> EP
+    A_JADWAL --> EP
+    A_BERITA --> EP
+    A_GALERI --> EP
+    A_PROG --> EP
+    A_PMS --> EP
+    A_PLG --> EP
+    A_AK --> EP
+    A_REK --> EP
+    A_AKUN --> EP
+    A_LOGOUT --> EP
+```
+
+---
+
 ### 2.1 Activity Diagram: Login & Akses Dashboard Admin
 
 ```mermaid
