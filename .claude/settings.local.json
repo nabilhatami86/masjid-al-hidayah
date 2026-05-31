@@ -4,7 +4,9 @@
       "WebFetch(domain:api.myquran.com)",
       "Bash(cat next.config.ts)",
       "Bash(cat next.config.js)",
-      "Bash(cat next.config.mjs)"
+      "Bash(cat next.config.mjs)",
+      "Bash(mermaid\" \"c:/Users/muham/Desktop/masjid-al-hidayah/ERD.md\")",
+      "Bash(grep -n \"^```mermaid\" \"c:/Users/muham/Desktop/masjid-al-hidayah/ERD.md\")"
     ]
   }
 }

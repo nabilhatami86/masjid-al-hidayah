@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ERD & Flowcharts — Masjid Al-Hidayah</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: #f1f5f9;
+        color: #1e293b;
+        min-height: 100vh;
+      }
+
+      header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #1a5c3a 100%);
+        color: white;
+        padding: 40px 24px;
+        text-align: center;
+      }
+      header h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+      header p  { font-size: 0.95rem; opacity: 0.8; }
+      header .badge {
+        display: inline-block; margin-top: 16px;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 20px; padding: 4px 14px;
+        font-size: 0.78rem; letter-spacing: 0.5px;
+      }
+
+      .container { max-width: 1320px; margin: 0 auto; padding: 36px 24px 60px; }
+
+      .toc {
+        background: white; border-radius: 14px;
+        padding: 20px 24px; margin-bottom: 32px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      }
+      .toc h2 {
+        font-size: 1rem; font-weight: 700; color: #64748b;
+        text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px;
+      }
+      .toc ol { padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+      .toc li { font-size: 0.92rem; }
+      .toc a { color: #2563eb; text-decoration: none; font-weight: 500; }
+      .toc a:hover { text-decoration: underline; }
+
+      .download-all {
+        display: flex; flex-wrap: wrap; gap: 12px;
+        margin-top: 16px; padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .download-all .btn { font-size: 12px; padding: 7px 14px; }
+      .btn-all-svg { background: #6366f1; color: #fff; }
+      .btn-all-png { background: #f59e0b; color: #fff; }
+      #dl-status { font-size: 12px; color: #64748b; align-self: center; font-style: italic; }
+
+      .card {
+        background: white; border-radius: 16px;
+        box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+        margin-bottom: 36px; overflow: hidden;
+      }
+      .card-header {
+        background: #f8fafc; border-bottom: 2px solid #e2e8f0;
+        padding: 18px 24px; display: flex; align-items: center;
+        justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      }
+      .card-title { font-size: 1.15rem; font-weight: 700; color: #0f172a; }
+      .card-subtitle { font-size: 0.8rem; color: #64748b; margin-top: 3px; font-weight: 400; }
+
+      .btn-group { display: flex; gap: 10px; align-items: center; }
+      .btn {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 18px; border-radius: 8px; border: none;
+        cursor: pointer; font-size: 13px; font-weight: 600;
+        transition: opacity .15s, transform .1s; white-space: nowrap;
+      }
+      .btn:hover  { opacity: 0.85; transform: translateY(-1px); }
+      .btn:active { transform: translateY(0); opacity: 1; }
+      .btn-svg { background: #3b82f6; color: #fff; }
+      .btn-png { background: #10b981; color: #fff; }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+      .diagram-wrapper {
+        padding: 32px 24px; overflow-x: auto;
+        display: flex; justify-content: center; align-items: flex-start;
+        min-height: 200px;
+      }
+      .diagram-wrapper svg { max-width: 100%; height: auto; }
+
+      .spinner {
+        display: inline-block; width: 20px; height: 20px;
+        border: 3px solid #e2e8f0; border-top-color: #3b82f6;
+        border-radius: 50%; animation: spin .7s linear infinite; margin: auto;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .render-error {
+        color: #ef4444; background: #fef2f2;
+        border: 1px solid #fecaca; border-radius: 8px;
+        padding: 16px 20px; font-size: 14px; width: 100%;
+      }
+
+      footer { text-align: center; padding: 24px; color: #94a3b8; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <h1>ERD &amp; Flowcharts</h1>
+      <p>Sistem Informasi Masjid Al-Hidayah</p>
+      <p>Ketintang Baru XV No.20, Kec. Gayungan, Surabaya</p>
+      <span class="badge">Mei 2026</span>
+    </header>
+
+    <div class="container">
+      <div class="toc">
+        <h2>Daftar Diagram</h2>
+        <ol>
+          <li><a href="#card1">Entity Relationship Diagram (ERD)</a></li>
+          <li><a href="#card2">Flowchart 1 — Alur Akses Website</a></li>
+          <li><a href="#card3">Flowchart 2 — Alur Berita &amp; Pengumuman</a></li>
+          <li><a href="#card4">Flowchart 3 — Alur Galeri Foto</a></li>
+          <li><a href="#card5">Flowchart 4 — Alur Jadwal Kegiatan</a></li>
+          <li><a href="#card6">Flowchart 5 — Alur Keuangan</a></li>
+          <li><a href="#card7">Flowchart 6 — Alur Donasi</a></li>
+          <li><a href="#card8">Flowchart 7 — Alur Kelola Akun Admin</a></li>
+        </ol>
+        <div class="download-all">
+          <button class="btn btn-all-svg" onclick="dlAllSVG()">⬇ Download Semua (SVG)</button>
+          <button class="btn btn-all-png" onclick="dlAllPNG()">⬇ Download Semua (PNG)</button>
+          <span id="dl-status"></span>
+        </div>
+      </div>
+
+      <!-- CARD 1 — ERD -->
+      <div class="card" id="card1">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Entity Relationship Diagram (ERD)</div>
+            <div class="card-subtitle">9 tabel: KHATIB, JADWAL, TRANSAKSI, REKENING, PENGATURAN, BERITA, GALERI, PROGRAM_IMAGES, ADMIN_USERS</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-svg" onclick="dlSVG('d1','erd-entity-relationship')">⬇ SVG</button>
+            <button class="btn btn-png" onclick="dlPNG('d1','erd-entity-relationship')">⬇ PNG</button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w1"><div class="spinner"></div></div>
+      </div>
+
+      <!-- CARD 2 — Alur Akses Website -->
+      <div class="card" id="card2">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Flowchart 1 — Alur Akses Website</div>
+            <div class="card-subtitle">Jalur Pengunjung memilih halaman &amp; jalur Admin login ke dasbor</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-svg" onclick="dlSVG('d2','flowchart-1-akses-website')">⬇ SVG</button>
+            <button class="btn btn-png" onclick="dlPNG('d2','flowchart-1-akses-website')">⬇ PNG</button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w2"><div class="spinner"></div></div>
+      </div>
+
+      <!-- CARD 3 — Alur Berita -->
+      <div class="card" id="card3">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Flowchart 2 — Alur Berita &amp; Pengumuman</div>
+            <div class="card-subtitle">CRUD berita oleh Admin, akses berita oleh Pengunjung</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-svg" onclick="dlSVG('d3','flowchart-2-berita')">⬇ SVG</button>
+            <button class="btn btn-png" onclick="dlPNG('d3','flowchart-2-berita')">⬇ PNG</button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w3"><div class="spinner"></div></div>
+      </div>
+
+      <!-- CARD 4 — Alur Galeri -->
+      <div class="card" id="card4">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Flowchart 3 — Alur Galeri Foto</div>
+            <div class="card-subtitle">Upload &amp; hapus foto oleh Admin, lightbox &amp; filter oleh Pengunjung</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-svg" onclick="dlSVG('d4','flowchart-3-galeri')">⬇ SVG</button>
+            <button class="btn btn-png" onclick="dlPNG('d4','flowchart-3-galeri')">⬇ PNG</button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w4"><div class="spinner"></div></div>
+      </div>
+
+      <!-- CARD 5 — Alur Jadwal -->
+      <div class="card" id="card5">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Flowchart 4 — Alur Jadwal Kegiatan</div>
+            <div class="card-subtitle">Tambah / ubah / hapus jadwal oleh Admin, lihat jadwal oleh Pengunjung</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-svg" onclick="dlSVG('d5','flowchart-4-jadwal')">⬇ SVG</button>
+            <button class="btn btn-png" onclick="dlPNG('d5','flowchart-4-jadwal')">⬇ PNG</button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w5"><div class="spinner"></div></div>
+      </div>
+
+      <!-- CARD 6 — Alur Keuangan -->
+      <div class="card" id="card6">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Flowchart 5 — Alur Keuangan</div>
+            <div class="card-subtitle">Pemasukan, Pengeluaran, Arus Kas — Admin &amp; Pengunjung</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-svg" onclick="dlSVG('d6','flowchart-5-keuangan')">⬇ SVG</button>
+            <button class="btn btn-png" onclick="dlPNG('d6','flowchart-5-keuangan')">⬇ PNG</button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w6"><div class="spinner"></div></div>
+      </div>
+
+      <!-- CARD 7 — Alur Donasi -->
+      <div class="card" id="card7">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Flowchart 6 — Alur Donasi</div>
+            <div class="card-subtitle">Transfer bank &amp; QRIS oleh Donatur, pencatatan oleh Admin</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-svg" onclick="dlSVG('d7','flowchart-6-donasi')">⬇ SVG</button>
+            <button class="btn btn-png" onclick="dlPNG('d7','flowchart-6-donasi')">⬇ PNG</button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w7"><div class="spinner"></div></div>
+      </div>
+
+      <!-- CARD 8 — Alur Akun Admin -->
+      <div class="card" id="card8">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Flowchart 7 — Alur Kelola Akun Admin</div>
+            <div class="card-subtitle">Tambah / edit / toggle / hapus akun admin</div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-svg" onclick="dlSVG('d8','flowchart-7-akun-admin')">⬇ SVG</button>
+            <button class="btn btn-png" onclick="dlPNG('d8','flowchart-7-akun-admin')">⬇ PNG</button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w8"><div class="spinner"></div></div>
+      </div>
+
+    </div>
+
+    <footer>Masjid Al-Hidayah &mdash; Sistem Informasi &mdash; Mei 2026</footer>
+
+    <script>
+      const DIAGRAMS = [
+        {
+          wrapperId: "w1", renderId: "d1",
+          code: `erDiagram
+    KHATIB {
+        uuid    id           PK "Primary Key"
+        text    nama         "NOT NULL"
+        text    gelar        "default: kosong"
+        text    spesialisasi "default: kosong"
+        text    no_hp        "default: kosong"
+        text    email        "default: kosong"
+        boolean aktif        "default: true"
+        text    foto_url     "nullable"
+    }
+    JADWAL {
+        uuid id             PK "Primary Key"
+        date tanggal        "NOT NULL"
+        text jenis_kegiatan "NOT NULL"
+        uuid khatib_id      FK "nullable"
+        text topik          "default: kosong"
+        text waktu          "format HH:MM"
+        text keterangan     "default: kosong"
+    }
+    TRANSAKSI {
+        uuid   id          PK "Primary Key"
+        date   tanggal     "NOT NULL"
+        text   keterangan  "NOT NULL"
+        text   kategori    "NOT NULL"
+        text   jenis       "masuk atau keluar"
+        bigint jumlah      "dalam Rupiah"
+    }
+    REKENING {
+        uuid    id      PK "Primary Key"
+        text    bank    "NOT NULL"
+        text    norek   "NOT NULL"
+        text    atas    "NOT NULL"
+        integer urutan  "default: 0"
+        boolean aktif   "default: true"
+    }
+    PENGATURAN {
+        text key   PK "Primary Key"
+        text value "nullable"
+    }
+    BERITA {
+        uuid        id         PK "Primary Key"
+        text        slug       "UNIQUE NOT NULL"
+        text        judul      "NOT NULL"
+        text        ringkasan  "default: kosong"
+        text        konten     "default: kosong"
+        text        kategori   "default: Pengumuman"
+        date        tanggal    "NOT NULL"
+        timestamptz created_at "default: now()"
+    }
+    GALERI {
+        uuid        id         PK "Primary Key"
+        text        judul      "NOT NULL"
+        text        deskripsi  "default: kosong"
+        text        image_url  "NOT NULL"
+        text        kategori   "default: Kegiatan"
+        date        tanggal    "NOT NULL"
+        timestamptz created_at "default: now()"
+    }
+    PROGRAM_IMAGES {
+        text        key        PK "Primary Key"
+        text        image_url  "nullable"
+        timestamptz updated_at "auto-update"
+    }
+    ADMIN_USERS {
+        uuid        id            PK "Primary Key"
+        text        username      "UNIQUE NOT NULL"
+        text        password_hash "NOT NULL SHA-256"
+        text        nama          "default: kosong"
+        boolean     aktif         "default: true"
+        timestamptz created_at    "default: now()"
+    }
+    KHATIB ||--o{ JADWAL : "mengisi"`
+        },
+
+        {
+          wrapperId: "w2", renderId: "d2",
+          code: `flowchart TD
+    subgraph PUBLIK["Pengunjung"]
+        P1([Buka Website]) --> P2{Pilih Menu}
+        P2 -- Beranda --> P3[Lihat Info Masjid\\nJadwal Sholat & Galeri]
+        P2 -- Jadwal Kegiatan --> P4[Lihat Jadwal Kegiatan]
+        P2 -- Laporan Keuangan --> P5[Lihat Laporan Keuangan\\nFilter Tahun & Bulan]
+        P2 -- Berita & Pengumuman --> P6[Lihat Berita]
+        P2 -- Jadwal Sholat --> P7[Lihat Jadwal Sholat Bulanan]
+    end
+    subgraph ADMIN["Admin"]
+        A1([Buka Halaman Admin]) --> A2{Sudah Login?}
+        A2 -- Belum --> A3[Masukkan Username & Password]
+        A3 --> A4{Cek DB admin_users}
+        A4 -- Tidak cocok --> A5[Tampil Pesan Gagal]
+        A5 --> A3
+        A4 -- Cocok --> A6[Masuk ke Dasbor Admin]
+        A2 -- Sudah --> A6
+        A6 --> A7{Pilih Menu}
+        A7 -- Konten --> A8[Khatib · Jadwal · Berita\\nGaleri · Program Unggulan]
+        A7 -- Keuangan --> A9{Sub-Menu}
+        A9 -- Transaksi --> A10{Sub-Menu Transaksi}
+        A10 -- Pemasukan --> A10a[Kelola Transaksi Masuk]
+        A10 -- Pengeluaran --> A10b[Kelola Transaksi Keluar]
+        A10 -- Arus Kas --> A10c[Laporan Alur Kas Bulanan]
+        A9 -- Nomor Rekening --> A11[Kelola Rekening & QRIS]
+    end`
+        },
+
+        {
+          wrapperId: "w3", renderId: "d3",
+          code: `flowchart TD
+    subgraph ADMIN["Admin"]
+        A1([Buka Menu Berita]) --> A2{Pilih Aksi}
+        A2 -- Tambah --> A3[Isi Judul, Kategori, Tanggal\\nRingkasan, Konten, Slug]
+        A3 --> A4{Data Lengkap?}
+        A4 -- Belum --> A3
+        A4 -- Ya --> A5[Simpan ke tabel berita]
+        A2 -- Edit --> A6[Ubah Data Berita]
+        A6 --> A7[Simpan Perubahan]
+        A2 -- Hapus --> A8{Yakin Hapus?}
+        A8 -- Batal --> A2
+        A8 -- Ya --> A9[Hapus dari DB]
+    end
+    subgraph PUBLIK["Pengunjung"]
+        P1([Buka Beranda]) --> P2[Lihat 3 Berita Terbaru]
+        P2 --> P3[Klik Lihat Semua]
+        P3 --> P4[Halaman /berita]
+        P4 --> P5[Klik Berita]
+        P5 --> P6[Detail Berita]
+    end
+    A5 --> P2
+    A7 --> P2
+    A9 --> P2`
+        },
+
+        {
+          wrapperId: "w4", renderId: "d4",
+          code: `flowchart TD
+    subgraph ADMIN["Admin"]
+        A1([Buka Galeri Foto]) --> A2{Pilih Aksi}
+        A2 -- Upload Foto --> A3[Pilih File Gambar]
+        A3 --> A4[Isi Judul, Kategori, Tanggal\\nDeskripsi opsional]
+        A4 --> A5[Upload ke Storage bucket galeri]
+        A5 --> A6[Simpan URL ke tabel galeri]
+        A2 -- Hapus --> A7{Yakin Hapus?}
+        A7 -- Batal --> A2
+        A7 -- Ya --> A8[Hapus dari Storage & DB]
+    end
+    subgraph BERANDA["Beranda"]
+        B1[Section Galeri Foto] --> B2[Grid 6 Foto Terbaru\\nAnimasi stagger masuk]
+        B2 --> B3[Hover: judul + deskripsi + kategori]
+        B2 --> B4[Klik — Lihat semua /galeri]
+    end
+    subgraph PUBLIK["Pengunjung /galeri"]
+        P1[Lihat Grid Masonry Foto] --> P2{Filter Kategori}
+        P2 --> P3[Foto Terfilter]
+        P3 --> P4[Klik Foto — Lightbox]
+        P4 --> P5[Navigasi Panah Kiri/Kanan\\nDot indicator · Counter]
+    end
+    A6 --> B1
+    A6 --> P1
+    A8 --> P1`
+        },
+
+        {
+          wrapperId: "w5", renderId: "d5",
+          code: `flowchart TD
+    subgraph ADMIN["Admin"]
+        A1([Buka Jadwal]) --> A2{Pilih Aksi}
+        A2 -- Tambah --> A3[Isi Tanggal, Jenis Kegiatan\\nWaktu, Topik, Keterangan]
+        A3 --> A4{Ada Khatib?}
+        A4 -- Ya --> A5[Pilih Nama Khatib]
+        A5 --> A6[Simpan Jadwal]
+        A4 -- Tidak --> A6
+        A2 -- Ubah --> A7[Edit Data Jadwal]
+        A7 --> A8[Simpan Perubahan]
+        A2 -- Hapus --> A9{Yakin Hapus?}
+        A9 -- Batal --> A2
+        A9 -- Ya --> A10[Hapus Jadwal]
+    end
+    subgraph PUBLIK["Pengunjung"]
+        P1([Beranda]) --> P2[Lihat 6 Jadwal Mendatang]
+        P2 --> P3[Klik Lihat Semua]
+        P3 --> P4[Halaman /jadwal-kegiatan]
+        P4 --> P5[Jadwal Mendatang & Sudah Berlalu]
+    end
+    A6  --> P2
+    A8  --> P2
+    A10 --> P2`
+        },
+
+        {
+          wrapperId: "w6", renderId: "d6",
+          code: `flowchart TD
+    subgraph ADMIN["Admin — Menu Transaksi"]
+        A1([Buka Keuangan]) --> A2{Pilih Sub-Menu}
+
+        A2 -- Pemasukan --> B1[Halaman Pemasukan\\n/admin/keuangan/pemasukan]
+        B1 --> B2{Aksi}
+        B2 -- Tambah --> B3[Form Pemasukan\\nKategori terkunci: Masuk]
+        B3 --> B4[Isi Kategori, Keterangan\\nJumlah, Tanggal]
+        B4 --> B5[Simpan ke DB\\njenis=masuk]
+        B2 -- Edit --> B6[Ubah Data]
+        B2 -- Hapus --> B7{Konfirmasi?}
+        B7 -- Ya --> B8[Hapus dari DB]
+        B2 -- Export --> B9[CSV / Excel / Print]
+
+        A2 -- Pengeluaran --> C1[Halaman Pengeluaran\\n/admin/keuangan/pengeluaran]
+        C1 --> C2{Aksi}
+        C2 -- Tambah --> C3[Form Pengeluaran\\nKategori terkunci: Keluar]
+        C3 --> C4[Isi Kategori, Keterangan\\nJumlah, Tanggal]
+        C4 --> C5[Simpan ke DB\\njenis=keluar]
+        C2 -- Edit --> C6[Ubah Data]
+        C2 -- Hapus --> C7{Konfirmasi?}
+        C7 -- Ya --> C8[Hapus dari DB]
+        C2 -- Export --> C9[CSV / Excel / Print]
+
+        A2 -- Arus Kas --> D1[Halaman Arus Kas\\n/admin/laporan]
+        D1 --> D2[Ringkasan per Bulan\\nPemasukan · Pengeluaran · Saldo]
+        D2 --> D3[Filter Tahun]
+        D2 --> D4[Export CSV / Print]
+        D1 --> D5[Widget Transaksi Terbaru]
+    end
+    subgraph PUBLIK["Pengunjung /laporan-keuangan"]
+        P1[Lihat Total Pemasukan\\nPengeluaran & Saldo] --> P2[Filter Tahun]
+        P2 --> P3{Pilih Bulan?}
+        P3 -- Ya --> P4[Filter Bulan]
+        P3 -- Tidak --> P5[Semua Bulan]
+        P4 --> P6[Grafik & Tabel Terfilter]
+        P5 --> P6
+        P6 --> P7[Export CSV / Excel / Print]
+    end
+    B5 --> P1
+    C5 --> P1
+    B8 --> P1
+    C8 --> P1`
+        },
+
+        {
+          wrapperId: "w7", renderId: "d7",
+          code: `flowchart TD
+    subgraph DONATUR["Donatur"]
+        D1([Buka Halaman Donasi\\ndi Beranda]) --> D2{Pilih Metode}
+        D2 -- Transfer Bank --> D3[Lihat No. Rekening\\nSalin & Transfer]
+        D2 -- QRIS --> D4[Scan QR Code\\nBayar via Bank / E-Wallet]
+        D3 --> D5[Selesai]
+        D4 --> D5
+    end
+    subgraph ADMIN["Admin"]
+        D5 --> A1[Cek Notifikasi Mutasi]
+        A1 --> A2([Buka Admin Keuangan\\nMenu Pemasukan])
+        A2 --> A3[Tambah Transaksi Pemasukan\\nKategori: Donasi Transfer]
+        A3 --> A4[(TRANSAKSI\\nmasuk · Donasi Transfer)]
+    end
+    subgraph PUBLIK["Pengunjung"]
+        A4 --> P1[Laporan Keuangan\\ndiperbarui otomatis]
+    end
+    subgraph ADMIN_REKENING["Admin — Nomor Rekening"]
+        R1([Buka Menu Nomor Rekening]) --> R2{Pilih Aksi}
+        R2 -- Tambah --> R3[Isi Bank, No. Rekening\\nNama Pemilik, Urutan]
+        R3 --> R4[Simpan ke DB]
+        R2 -- Upload QRIS --> R5[Upload Gambar QR]
+        R5 --> R6[Simpan URL ke PENGATURAN]
+        R2 -- Toggle Aktif --> R7[Tampil / Sembunyikan di Beranda]
+    end
+    R4 --> D3
+    R6 --> D4`
+        },
+
+        {
+          wrapperId: "w8", renderId: "d8",
+          code: `flowchart TD
+    subgraph ADMIN["Admin — /admin/akun"]
+        A1([Buka Kelola Akun]) --> A2[Lihat Daftar Akun Admin]
+        A2 --> A3{Pilih Aksi}
+        A3 -- Tambah Akun --> A4[Isi Nama, Username, Password\\nKonfirmasi Password]
+        A4 --> A5{Validasi}
+        A5 -- Gagal --> A4
+        A5 -- OK --> A6[Simpan ke admin_users\\nPassword di-hash SHA-256]
+        A3 -- Edit Akun --> A7[Ubah Nama / Username\\nPassword opsional]
+        A7 --> A8[Simpan Perubahan]
+        A3 -- Toggle Aktif --> A9{Akun sendiri?}
+        A9 -- Ya --> A10[Ditolak]
+        A9 -- Tidak --> A11[Status aktif/nonaktif diubah]
+        A3 -- Hapus --> A12{Akun sendiri\\natau satu-satunya?}
+        A12 -- Ya --> A13[Ditolak]
+        A12 -- Tidak --> A14{Yakin Hapus?}
+        A14 -- Batal --> A2
+        A14 -- Ya --> A15[Hapus dari DB]
+    end`
+        },
+      ];
+
+      const FILE_NAMES = [
+        "erd-entity-relationship",
+        "flowchart-1-akses-website",
+        "flowchart-2-berita",
+        "flowchart-3-galeri",
+        "flowchart-4-jadwal",
+        "flowchart-5-keuangan",
+        "flowchart-6-donasi",
+        "flowchart-7-akun-admin",
+      ];
+
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "default",
+        securityLevel: "loose",
+        flowchart: { useMaxWidth: true, htmlLabels: true, curve: "basis" },
+        er: { useMaxWidth: true },
+      });
+
+      async function renderAll() {
+        for (const d of DIAGRAMS) {
+          const wrapper = document.getElementById(d.wrapperId);
+          try {
+            const { svg } = await mermaid.render(d.renderId, d.code.trim());
+            wrapper.innerHTML = svg;
+            const svgEl = wrapper.querySelector("svg");
+            if (svgEl) { svgEl.style.maxWidth = "100%"; svgEl.style.height = "auto"; }
+          } catch (err) {
+            wrapper.innerHTML = `<div class="render-error"><strong>Gagal merender diagram.</strong><br>${err.message || err}</div>`;
+          }
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", renderAll);
+
+      function dlSVG(renderId, filename) {
+        const d = DIAGRAMS.find((x) => x.renderId === renderId);
+        if (!d) return;
+        const svg = document.getElementById(d.wrapperId)?.querySelector("svg");
+        if (!svg) { alert("Diagram belum selesai dirender. Coba lagi sebentar."); return; }
+        const clone = svg.cloneNode(true);
+        ensureDimensions(clone, svg);
+        const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" });
+        triggerDownload(URL.createObjectURL(blob), filename + ".svg");
+      }
+
+      function dlPNG(renderId, filename) {
+        const d = DIAGRAMS.find((x) => x.renderId === renderId);
+        if (!d) return;
+        const svg = document.getElementById(d.wrapperId)?.querySelector("svg");
+        if (!svg) { alert("Diagram belum selesai dirender. Coba lagi sebentar."); return; }
+        const clone = svg.cloneNode(true);
+        const { w, h } = ensureDimensions(clone, svg);
+        const scale = 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.ceil(w * scale);
+        canvas.height = Math.ceil(h * scale);
+        const ctx = canvas.getContext("2d");
+        ctx.scale(scale, scale);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, w, h);
+        const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          canvas.toBlob((pngBlob) => triggerDownload(URL.createObjectURL(pngBlob), filename + ".png"), "image/png");
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); alert("Gagal mengkonversi ke PNG. Gunakan SVG sebagai alternatif."); };
+        img.src = url;
+      }
+
+      function ensureDimensions(clone, original) {
+        let w, h;
+        const vb = original.getAttribute("viewBox");
+        if (vb) { const p = vb.trim().split(/[\s,]+/); w = parseFloat(p[2]); h = parseFloat(p[3]); }
+        if (!w || !h) { const r = original.getBoundingClientRect(); w = r.width || 900; h = r.height || 600; }
+        clone.setAttribute("width", w);
+        clone.setAttribute("height", h);
+        clone.style.maxWidth = "";
+        return { w, h };
+      }
+
+      function triggerDownload(url, filename) {
+        const a = document.createElement("a");
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      }
+
+      async function dlAllSVG() {
+        const status = document.getElementById("dl-status");
+        for (let i = 0; i < DIAGRAMS.length; i++) {
+          status.textContent = `Mengunduh SVG ${i + 1}/${DIAGRAMS.length}...`;
+          const d = DIAGRAMS[i];
+          const svg = document.getElementById(d.wrapperId)?.querySelector("svg");
+          if (!svg) continue;
+          const clone = svg.cloneNode(true);
+          ensureDimensions(clone, svg);
+          const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" });
+          triggerDownload(URL.createObjectURL(blob), FILE_NAMES[i] + ".svg");
+          await delay(400);
+        }
+        status.textContent = "Semua SVG selesai diunduh.";
+        setTimeout(() => (status.textContent = ""), 3000);
+      }
+
+      async function dlAllPNG() {
+        const status = document.getElementById("dl-status");
+        for (let i = 0; i < DIAGRAMS.length; i++) {
+          status.textContent = `Mengunduh PNG ${i + 1}/${DIAGRAMS.length}...`;
+          const d = DIAGRAMS[i];
+          const svg = document.getElementById(d.wrapperId)?.querySelector("svg");
+          if (!svg) continue;
+          await new Promise((resolve) => {
+            const clone = svg.cloneNode(true);
+            const { w, h } = ensureDimensions(clone, svg);
+            const scale = 2;
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.ceil(w * scale); canvas.height = Math.ceil(h * scale);
+            const ctx = canvas.getContext("2d");
+            ctx.scale(scale, scale); ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, h);
+            const blob = new Blob([new XMLSerializer().serializeToString(clone)], { type: "image/svg+xml;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const img = new Image();
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0, w, h); URL.revokeObjectURL(url);
+              canvas.toBlob((pngBlob) => { triggerDownload(URL.createObjectURL(pngBlob), FILE_NAMES[i] + ".png"); resolve(); }, "image/png");
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+            img.src = url;
+          });
+          await delay(500);
+        }
+        status.textContent = "Semua PNG selesai diunduh.";
+        setTimeout(() => (status.textContent = ""), 3000);
+      }
+
+      const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+    </script>
+  </body>
+</html>

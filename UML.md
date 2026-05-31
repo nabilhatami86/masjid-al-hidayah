@@ -16,10 +16,10 @@
 
 ```mermaid
 flowchart LR
-    PENGUNJUNG(("👤\nPengunjung"))
-    ADMIN(("🔐\nAdmin"))
+    PENGUNJUNG(("Pengunjung"))
+    ADMIN(("Admin"))
 
-    subgraph SISTEM["🕌  Sistem Informasi Masjid Al-Hidayah"]
+    subgraph SISTEM["Sistem Informasi Masjid Al-Hidayah"]
         direction TB
 
         subgraph FP["Fitur Publik"]

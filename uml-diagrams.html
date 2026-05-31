@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UML Diagrams — Masjid Al-Hidayah</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: #f1f5f9;
+        color: #1e293b;
+        min-height: 100vh;
+      }
+
+      header {
+        background: linear-gradient(135deg, #1e3a5f 0%, #1a5c3a 100%);
+        color: white;
+        padding: 40px 24px;
+        text-align: center;
+      }
+      header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+      }
+      header p {
+        font-size: 0.95rem;
+        opacity: 0.8;
+      }
+      header .badge {
+        display: inline-block;
+        margin-top: 16px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        padding: 4px 14px;
+        font-size: 0.78rem;
+        letter-spacing: 0.5px;
+      }
+
+      .container {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: 36px 24px 60px;
+      }
+
+      .toc {
+        background: white;
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 32px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07);
+      }
+      .toc h2 {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        margin-bottom: 12px;
+      }
+      .toc ol {
+        padding-left: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .toc li {
+        font-size: 0.92rem;
+      }
+      .toc a {
+        color: #2563eb;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .toc a:hover {
+        text-decoration: underline;
+      }
+
+      .download-all {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+      }
+      .download-all .btn {
+        font-size: 12px;
+        padding: 7px 14px;
+      }
+      .btn-all-svg {
+        background: #6366f1;
+        color: #fff;
+      }
+      .btn-all-png {
+        background: #f59e0b;
+        color: #fff;
+      }
+      #dl-status {
+        font-size: 12px;
+        color: #64748b;
+        align-self: center;
+        font-style: italic;
+      }
+
+      .card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+        margin-bottom: 36px;
+        overflow: hidden;
+      }
+      .card-header {
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .card-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #0f172a;
+      }
+      .card-subtitle {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: 3px;
+        font-weight: 400;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition:
+          opacity 0.15s,
+          transform 0.1s;
+        white-space: nowrap;
+      }
+      .btn:hover {
+        opacity: 0.85;
+        transform: translateY(-1px);
+      }
+      .btn:active {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      .btn-svg {
+        background: #3b82f6;
+        color: #fff;
+      }
+      .btn-png {
+        background: #10b981;
+        color: #fff;
+      }
+      .btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .diagram-wrapper {
+        padding: 32px 24px;
+        overflow-x: auto;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 200px;
+      }
+      .diagram-wrapper .mermaid {
+        max-width: 100%;
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #e2e8f0;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        margin: auto;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .render-error {
+        color: #ef4444;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 16px 20px;
+        font-size: 14px;
+        width: 100%;
+      }
+
+      footer {
+        text-align: center;
+        padding: 24px;
+        color: #94a3b8;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>UML Diagrams</h1>
+      <p>Sistem Informasi Masjid Al-Hidayah</p>
+      <p>Ketintang Baru XV No.20, Kec. Gayungan, Surabaya</p>
+      <span class="badge">Mei 2026</span>
+    </header>
+
+    <div class="container">
+      <!-- Table of Contents -->
+      <div class="toc">
+        <h2>Daftar Diagram</h2>
+        <ol>
+          <li><a href="#card1">Use Case Diagram</a></li>
+          <li><a href="#card2">Activity Diagram — Gambaran Umum Sistem</a></li>
+          <li>
+            <a href="#card3"
+              >Activity Diagram — Login &amp; Akses Dashboard Admin</a
+            >
+          </li>
+          <li>
+            <a href="#card4">Activity Diagram — Kelola Transaksi Keuangan</a>
+          </li>
+          <li>
+            <a href="#card5"
+              >Activity Diagram — Kelola Berita &amp; Akses Pengunjung</a
+            >
+          </li>
+          <li><a href="#card6">Class Diagram</a></li>
+        </ol>
+        <div class="download-all">
+          <button class="btn btn-all-svg" onclick="dlAllSVG()">
+            ⬇ Download Semua (SVG)
+          </button>
+          <button class="btn btn-all-png" onclick="dlAllPNG()">
+            ⬇ Download Semua (PNG)
+          </button>
+          <span id="dl-status"></span>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       CARD 1 — USE CASE DIAGRAM
+  ═══════════════════════════════════════════════════════════ -->
+      <div class="card" id="card1">
+        <div class="card-header">
+          <div>
+            <div class="card-title">1. Use Case Diagram</div>
+            <div class="card-subtitle">Aktor: Pengunjung &amp; Admin</div>
+          </div>
+          <div class="btn-group">
+            <button
+              class="btn btn-svg"
+              id="svg1"
+              onclick="dlSVG('d1', '1-use-case-diagram')"
+            >
+              ⬇ SVG
+            </button>
+            <button
+              class="btn btn-png"
+              id="png1"
+              onclick="dlPNG('d1', '1-use-case-diagram')"
+            >
+              ⬇ PNG
+            </button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w1"><div class="spinner"></div></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       CARD 2 — ACTIVITY OVERVIEW
+  ═══════════════════════════════════════════════════════════ -->
+      <div class="card" id="card2">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              2.0 Activity Diagram — Gambaran Umum Sistem
+            </div>
+            <div class="card-subtitle">
+              Semua alur Pengunjung &amp; Admin dalam satu diagram
+            </div>
+          </div>
+          <div class="btn-group">
+            <button
+              class="btn btn-svg"
+              onclick="dlSVG('d2', '2.0-activity-overview')"
+            >
+              ⬇ SVG
+            </button>
+            <button
+              class="btn btn-png"
+              onclick="dlPNG('d2', '2.0-activity-overview')"
+            >
+              ⬇ PNG
+            </button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w2"><div class="spinner"></div></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       CARD 3 — ACTIVITY LOGIN
+  ═══════════════════════════════════════════════════════════ -->
+      <div class="card" id="card3">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              2.1 Activity Diagram — Login &amp; Akses Dashboard Admin
+            </div>
+            <div class="card-subtitle">
+              Autentikasi, verifikasi SHA-256, session cookie
+            </div>
+          </div>
+          <div class="btn-group">
+            <button
+              class="btn btn-svg"
+              onclick="dlSVG('d3', '2.1-activity-login')"
+            >
+              ⬇ SVG
+            </button>
+            <button
+              class="btn btn-png"
+              onclick="dlPNG('d3', '2.1-activity-login')"
+            >
+              ⬇ PNG
+            </button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w3"><div class="spinner"></div></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       CARD 4 — ACTIVITY KEUANGAN
+  ═══════════════════════════════════════════════════════════ -->
+      <div class="card" id="card4">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              2.2 Activity Diagram — Kelola Transaksi Keuangan
+            </div>
+            <div class="card-subtitle">
+              Pemasukan, Pengeluaran, Arus Kas, Export
+            </div>
+          </div>
+          <div class="btn-group">
+            <button
+              class="btn btn-svg"
+              onclick="dlSVG('d4', '2.2-activity-keuangan')"
+            >
+              ⬇ SVG
+            </button>
+            <button
+              class="btn btn-png"
+              onclick="dlPNG('d4', '2.2-activity-keuangan')"
+            >
+              ⬇ PNG
+            </button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w4"><div class="spinner"></div></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       CARD 5 — ACTIVITY BERITA
+  ═══════════════════════════════════════════════════════════ -->
+      <div class="card" id="card5">
+        <div class="card-header">
+          <div>
+            <div class="card-title">
+              2.3 Activity Diagram — Kelola Berita &amp; Akses Pengunjung
+            </div>
+            <div class="card-subtitle">
+              CRUD berita oleh admin, akses detail berita oleh pengunjung
+            </div>
+          </div>
+          <div class="btn-group">
+            <button
+              class="btn btn-svg"
+              onclick="dlSVG('d5', '2.3-activity-berita')"
+            >
+              ⬇ SVG
+            </button>
+            <button
+              class="btn btn-png"
+              onclick="dlPNG('d5', '2.3-activity-berita')"
+            >
+              ⬇ PNG
+            </button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w5"><div class="spinner"></div></div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════
+       CARD 6 — CLASS DIAGRAM
+  ═══════════════════════════════════════════════════════════ -->
+      <div class="card" id="card6">
+        <div class="card-header">
+          <div>
+            <div class="card-title">3. Class Diagram</div>
+            <div class="card-subtitle">
+              9 entitas: Khatib, Jadwal, Transaksi, Rekening, Pengaturan,
+              Berita, Galeri, ProgramImages, AdminUsers
+            </div>
+          </div>
+          <div class="btn-group">
+            <button
+              class="btn btn-svg"
+              onclick="dlSVG('d6', '3-class-diagram')"
+            >
+              ⬇ SVG
+            </button>
+            <button
+              class="btn btn-png"
+              onclick="dlPNG('d6', '3-class-diagram')"
+            >
+              ⬇ PNG
+            </button>
+          </div>
+        </div>
+        <div class="diagram-wrapper" id="w6"><div class="spinner"></div></div>
+      </div>
+    </div>
+    <!-- /.container -->
+
+    <footer>Masjid Al-Hidayah &mdash; Sistem Informasi &mdash; Mei 2026</footer>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════ -->
+    <script>
+      // ── Mermaid code for each diagram ──────────────────────────────
+
+      const DIAGRAMS = [
+        {
+          wrapperId: "w1",
+          renderId: "d1",
+          code: `flowchart LR
+    PENGUNJUNG(("Pengunjung"))
+    ADMIN(("Admin"))
+
+    subgraph SISTEM["Sistem Informasi Masjid Al-Hidayah"]
+        direction TB
+        subgraph FP["Fitur Publik"]
+            direction TB
+            UC1("Lihat Beranda")
+            UC2("Lihat Berita & Pengumuman")
+            UC3("Lihat Jadwal Kegiatan")
+            UC4("Lihat Jadwal Sholat")
+            UC5("Lihat Laporan Keuangan")
+            UC6("Lihat Galeri Foto")
+            UC7("Filter & Export Laporan")
+            UC8("Lihat Rekening Donasi")
+        end
+        subgraph FA["Autentikasi"]
+            direction TB
+            UA1("Login Admin")
+            UA2("Logout")
+        end
+        subgraph FK["Kelola Konten"]
+            direction TB
+            UK1("Kelola Data Khatib")
+            UK2("Kelola Jadwal Kegiatan")
+            UK3("Kelola Berita & Pengumuman")
+            UK4("Kelola Galeri Foto")
+            UK5("Kelola Program Unggulan")
+        end
+        subgraph FF["Kelola Keuangan"]
+            direction TB
+            UF1("Catat Transaksi Pemasukan")
+            UF2("Catat Transaksi Pengeluaran")
+            UF3("Lihat Laporan Arus Kas")
+            UF4("Export Data Transaksi")
+            UF5("Kelola Rekening & QRIS")
+        end
+        subgraph FS["Pengaturan Sistem"]
+            US1("Kelola Akun Admin")
+        end
+    end
+
+    PENGUNJUNG --> UC1
+    PENGUNJUNG --> UC2
+    PENGUNJUNG --> UC3
+    PENGUNJUNG --> UC4
+    PENGUNJUNG --> UC5
+    PENGUNJUNG --> UC6
+    PENGUNJUNG --> UC7
+    PENGUNJUNG --> UC8
+    ADMIN --> UA1
+    ADMIN --> UA2
+    ADMIN --> UK1
+    ADMIN --> UK2
+    ADMIN --> UK3
+    ADMIN --> UK4
+    ADMIN --> UK5
+    ADMIN --> UF1
+    ADMIN --> UF2
+    ADMIN --> UF3
+    ADMIN --> UF4
+    ADMIN --> UF5
+    ADMIN --> US1`,
+        },
+
+        {
+          wrapperId: "w2",
+          renderId: "d2",
+          code: `flowchart TD
+    S([Mulai]) --> ROLE{Siapa\\nPengguna?}
+
+    ROLE -- Pengunjung --> P_BUKA[Buka Website\\nMasjid Al-Hidayah]
+    P_BUKA --> P_MENU{Pilih Halaman}
+
+    P_MENU -- Beranda --> P_BERANDA[Lihat Info Masjid\\nJadwal Sholat & Program Unggulan]
+    P_BERANDA --> P_SUB{Lanjut ke?}
+    P_SUB -- Berita --> P_BERITA_D[Lihat Detail Berita\\n/berita/slug]
+    P_SUB -- Donasi --> P_DONASI[Lihat Rekening Bank & QRIS\\nSalin & Transfer]
+    P_SUB -- Galeri --> P_GAL_P[Lihat Galeri\\nFilter & Lightbox]
+
+    P_MENU -- Berita --> P_BERITA[Daftar Semua Berita\\n/berita]
+    P_BERITA --> P_BERITA_D
+
+    P_MENU -- Jadwal Kegiatan --> P_JADWAL[Lihat Jadwal Mendatang\\n& Arsip Kegiatan]
+    P_MENU -- Jadwal Sholat  --> P_SHOLAT[Jadwal Sholat Bulanan\\nKota Surabaya]
+    P_MENU -- Laporan Keuangan --> P_LAPORAN[Lihat Laporan Keuangan\\nFilter Tahun & Bulan]
+    P_LAPORAN --> P_EXP{Export?}
+    P_EXP -- Ya --> P_EXPORT[Download CSV / Excel / Print]
+    P_EXP -- Tidak --> EP([Selesai])
+    P_MENU -- Galeri --> P_GAL_P
+
+    ROLE -- Admin --> A_LOGIN[Buka /admin/login\\nMasukkan Kredensial]
+    A_LOGIN --> A_AUTH{Autentikasi\\nBerhasil?}
+    A_AUTH -- Tidak --> A_ERR[Tampilkan Pesan Error]
+    A_ERR --> A_LOGIN
+    A_AUTH -- Ya --> A_DASH[Dashboard Admin\\n/admin/dashboard]
+    A_DASH --> A_MENU{Pilih Menu\\nSidebar}
+
+    A_MENU -- Konten --> A_KONTEN{Sub-Menu\\nKonten}
+    A_KONTEN -- Khatib --> A_KHATIB[Kelola Data Khatib\\nTambah / Edit / Hapus]
+    A_KONTEN -- Jadwal --> A_JADWAL[Kelola Jadwal Kegiatan\\nTambah / Edit / Hapus]
+    A_KONTEN -- Berita --> A_BERITA[Kelola Berita & Pengumuman\\nTambah / Edit / Hapus]
+    A_KONTEN -- Galeri --> A_GALERI[Upload & Kelola Foto Galeri\\nHapus dari Storage & DB]
+    A_KONTEN -- Program --> A_PROG[Upload Foto\\nProgram Unggulan]
+
+    A_MENU -- Keuangan --> A_KEU{Sub-Menu\\nKeuangan}
+    A_KEU -- Pemasukan --> A_PMS[Catat & Kelola\\nTransaksi Masuk]
+    A_KEU -- Pengeluaran --> A_PLG[Catat & Kelola\\nTransaksi Keluar]
+    A_KEU -- Arus Kas --> A_AK[Laporan Arus Kas Bulanan\\nFilter Tahun & Export]
+    A_KEU -- Rekening --> A_REK[Kelola Rekening Bank\\n& Upload QRIS]
+
+    A_MENU -- Akun --> A_AKUN[Kelola Akun Admin\\nTambah / Edit / Nonaktif / Hapus]
+    A_MENU -- Logout --> A_LOGOUT[Hapus Session Cookie\\nRedirect ke /admin/login]
+
+    P_BERANDA --> EP
+    P_BERITA_D --> EP
+    P_DONASI  --> EP
+    P_GAL_P   --> EP
+    P_JADWAL  --> EP
+    P_SHOLAT  --> EP
+    P_EXPORT  --> EP
+    A_KHATIB  --> EP
+    A_JADWAL  --> EP
+    A_BERITA  --> EP
+    A_GALERI  --> EP
+    A_PROG    --> EP
+    A_PMS     --> EP
+    A_PLG     --> EP
+    A_AK      --> EP
+    A_REK     --> EP
+    A_AKUN    --> EP
+    A_LOGOUT  --> EP`,
+        },
+
+        {
+          wrapperId: "w3",
+          renderId: "d3",
+          code: `flowchart TD
+    S([Mulai]) --> BUKA[Buka Halaman /admin/login]
+    BUKA --> ISI[Masukkan Username & Password]
+    ISI --> SUBMIT[Klik Tombol Login]
+    SUBMIT --> CEK_FIELD{Field\\nkosong?}
+    CEK_FIELD -- Ya --> ERR_FIELD[Tampilkan Validasi Field Wajib]
+    ERR_FIELD --> ISI
+    CEK_FIELD -- Tidak --> QUERY[Query tabel admin_users\\nWHERE username = input]
+    QUERY --> CEK_USER{User\\nditemukan?}
+    CEK_USER -- Tidak --> ERR_AUTH[Tampilkan Pesan:\\nUsername atau Password Salah]
+    ERR_AUTH --> ISI
+    CEK_USER -- Ya --> CEK_HASH{Hash SHA-256\\ncocok?}
+    CEK_HASH -- Tidak --> ERR_AUTH
+    CEK_HASH -- Ya --> CEK_AKTIF{Akun\\naktif?}
+    CEK_AKTIF -- Tidak --> ERR_NONAKTIF[Tampilkan Pesan:\\nAkun Dinonaktifkan]
+    ERR_NONAKTIF --> ISI
+    CEK_AKTIF -- Ya --> SESI[Buat Session Cookie httpOnly]
+    SESI --> DASHBOARD[Redirect ke /admin/dashboard]
+    DASHBOARD --> PILIH_MENU{Pilih Menu\\nSidebar}
+    PILIH_MENU -- Konten --> KONTEN[Khatib / Jadwal / Berita\\nGaleri / Program Unggulan]
+    PILIH_MENU -- Keuangan --> KEUANGAN[Pemasukan / Pengeluaran\\nArus Kas / Rekening]
+    PILIH_MENU -- Logout --> HAPUS_SESI[Hapus Session Cookie]
+    HAPUS_SESI --> REDIR[Redirect ke /admin/login]
+    REDIR --> E([Selesai])
+    KONTEN --> E
+    KEUANGAN --> E`,
+        },
+
+        {
+          wrapperId: "w4",
+          renderId: "d4",
+          code: `flowchart TD
+    S([Mulai]) --> BUKA[Admin Buka Menu Keuangan]
+    BUKA --> PILIH{Pilih\\nSub-Menu}
+
+    PILIH -- Pemasukan --> H_PMS[Halaman Pemasukan]
+    H_PMS --> AKSI_PMS{Pilih Aksi}
+    AKSI_PMS -- Tambah --> FORM_PMS[Form: Kategori, Keterangan,\\nJumlah, Tanggal]
+    FORM_PMS --> V_PMS{Data\\nlengkap?}
+    V_PMS -- Tidak --> FORM_PMS
+    V_PMS -- Ya --> DB_PMS[Simpan ke DB — jenis=masuk]
+    AKSI_PMS -- Edit --> EDIT_PMS[Ubah Data Transaksi Masuk]
+    EDIT_PMS --> DB_PMS
+    AKSI_PMS -- Hapus --> K_PMS{Konfirmasi\\nHapus?}
+    K_PMS -- Batal --> H_PMS
+    K_PMS -- Ya --> DEL_PMS[Hapus dari DB]
+    AKSI_PMS -- Export --> EXP[Export CSV / Excel / Print]
+
+    PILIH -- Pengeluaran --> H_PLG[Halaman Pengeluaran]
+    H_PLG --> AKSI_PLG{Pilih Aksi}
+    AKSI_PLG -- Tambah --> FORM_PLG[Form: Kategori, Keterangan,\\nJumlah, Tanggal]
+    FORM_PLG --> V_PLG{Data\\nlengkap?}
+    V_PLG -- Tidak --> FORM_PLG
+    V_PLG -- Ya --> DB_PLG[Simpan ke DB — jenis=keluar]
+    AKSI_PLG -- Edit --> EDIT_PLG[Ubah Data Transaksi Keluar]
+    EDIT_PLG --> DB_PLG
+    AKSI_PLG -- Hapus --> K_PLG{Konfirmasi\\nHapus?}
+    K_PLG -- Batal --> H_PLG
+    K_PLG -- Ya --> DEL_PLG[Hapus dari DB]
+
+    PILIH -- Arus Kas --> AK[Halaman Arus Kas /admin/laporan]
+    AK --> FILTER[Pilih Filter Tahun]
+    FILTER --> RINGKASAN[Tampilkan Ringkasan Bulanan:\\nPemasukan, Pengeluaran, Saldo]
+    RINGKASAN --> EXP_AK{Export?}
+    EXP_AK -- Ya --> CETAK[Export CSV / Print]
+    EXP_AK -- Tidak --> E([Selesai])
+    DB_PMS  --> E
+    DEL_PMS --> E
+    EXP     --> E
+    DB_PLG  --> E
+    DEL_PLG --> E
+    CETAK   --> E`,
+        },
+
+        {
+          wrapperId: "w5",
+          renderId: "d5",
+          code: `flowchart TD
+    S([Mulai]) --> ROLE{Siapa\\nyang akses?}
+
+    ROLE -- Admin --> BUKA_ADMIN[Buka /admin/berita]
+    BUKA_ADMIN --> DAFTAR[Tampil Daftar Berita]
+    DAFTAR --> AKSI{Pilih Aksi}
+
+    AKSI -- Tambah --> FORM[Isi Judul, Kategori, Tanggal,\\nSlug, Ringkasan, Konten]
+    FORM --> CEK_SLUG{Slug\\nunik?}
+    CEK_SLUG -- Tidak --> ERR_SLUG[Tampil Error: Slug Duplikat]
+    ERR_SLUG --> FORM
+    CEK_SLUG -- Ya --> CEK_DATA{Data\\nlengkap?}
+    CEK_DATA -- Tidak --> FORM
+    CEK_DATA -- Ya --> SIMPAN[Simpan ke tabel berita]
+    SIMPAN --> PUBLIK[Berita tampil di /berita]
+
+    AKSI -- Edit --> LOAD[Load Data Berita Terpilih]
+    LOAD --> UBAH[Ubah Field yang Diperlukan]
+    UBAH --> UPDATE[Simpan Perubahan ke DB]
+    UPDATE --> PUBLIK
+
+    AKSI -- Hapus --> KONFIRM{Yakin\\nHapus?}
+    KONFIRM -- Batal --> DAFTAR
+    KONFIRM -- Ya --> HAPUS[Hapus dari DB]
+    HAPUS --> PUBLIK
+
+    ROLE -- Pengunjung --> BERANDA[Buka Beranda:\\nLihat 3 Berita Terbaru]
+    BERANDA --> KLIK_SEMUA[Klik Lihat Semua Berita]
+    KLIK_SEMUA --> LIST[Halaman /berita\\nSemua Berita Tersedia]
+    LIST --> KLIK_BERITA[Klik Judul Berita]
+    KLIK_BERITA --> DETAIL[Halaman Detail /berita/slug]
+
+    PUBLIK --> LIST
+    DETAIL --> E([Selesai])`,
+        },
+
+        {
+          wrapperId: "w6",
+          renderId: "d6",
+          code: `classDiagram
+    direction TB
+
+    class Khatib {
+        +UUID id
+        +String nama
+        +String gelar
+        +String spesialisasi
+        +String noHp
+        +String email
+        +Boolean aktif
+        +String fotoUrl
+        +isAktif() Boolean
+        +getNamaLengkap() String
+    }
+    class Jadwal {
+        +UUID id
+        +Date tanggal
+        +String jenisKegiatan
+        +UUID khatibId
+        +String topik
+        +String waktu
+        +String keterangan
+        +hasKhatib() Boolean
+        +isMendatang() Boolean
+    }
+    class Transaksi {
+        +UUID id
+        +Date tanggal
+        +String keterangan
+        +String kategori
+        +String jenis
+        +BigInt jumlah
+        +isMasuk() Boolean
+        +isKeluar() Boolean
+        +getFormatRupiah() String
+    }
+    class Rekening {
+        +UUID id
+        +String bank
+        +String norek
+        +String atas
+        +Integer urutan
+        +Boolean aktif
+        +isAktif() Boolean
+        +getTampilan() String
+    }
+    class Pengaturan {
+        +String key
+        +String value
+        +getValue() String
+        +setValue(val String) void
+    }
+    class Berita {
+        +UUID id
+        +String slug
+        +String judul
+        +String ringkasan
+        +String konten
+        +String kategori
+        +Date tanggal
+        +Timestamp createdAt
+        +getUrl() String
+        +getRingkasanSingkat(panjang int) String
+    }
+    class Galeri {
+        +UUID id
+        +String judul
+        +String deskripsi
+        +String imageUrl
+        +String kategori
+        +Date tanggal
+        +Timestamp createdAt
+        +getImageUrl() String
+    }
+    class ProgramImages {
+        +String key
+        +String imageUrl
+        +Timestamp updatedAt
+        +getImageUrl() String
+        +updateImage(url String) void
+    }
+    class AdminUsers {
+        +UUID id
+        +String username
+        +String passwordHash
+        +String nama
+        +Boolean aktif
+        +Timestamp createdAt
+        +verifyPassword(input String) Boolean
+        +isAktif() Boolean
+        +hashPassword(plain String) String
+    }
+
+    Khatib "1" --> "0..*" Jadwal : mengisi
+    AdminUsers ..> Khatib        : mengelola
+    AdminUsers ..> Jadwal        : mengelola
+    AdminUsers ..> Berita        : mengelola
+    AdminUsers ..> Galeri        : mengelola
+    AdminUsers ..> Transaksi     : mencatat
+    AdminUsers ..> Rekening      : mengelola
+    AdminUsers ..> ProgramImages : mengunggah
+    AdminUsers ..> Pengaturan    : mengkonfigurasi`,
+        },
+      ];
+
+      // ── Render all diagrams ─────────────────────────────────────────
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: "default",
+        securityLevel: "loose",
+        flowchart: { useMaxWidth: true, htmlLabels: true, curve: "basis" },
+        classDiagram: { useMaxWidth: true },
+      });
+
+      async function renderAll() {
+        for (const d of DIAGRAMS) {
+          const wrapper = document.getElementById(d.wrapperId);
+          try {
+            const { svg } = await mermaid.render(d.renderId, d.code.trim());
+            wrapper.innerHTML = svg;
+            // Make SVG responsive but keep a minimum size
+            const svgEl = wrapper.querySelector("svg");
+            if (svgEl) {
+              svgEl.style.maxWidth = "100%";
+              svgEl.style.height = "auto";
+            }
+          } catch (err) {
+            wrapper.innerHTML = `<div class="render-error">
+        <strong>Gagal merender diagram.</strong><br>
+        ${err.message || err}
+      </div>`;
+          }
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", renderAll);
+
+      // ── Download helpers ────────────────────────────────────────────
+      function getSVG(containerId) {
+        const el = document.getElementById(containerId);
+        if (!el) return null;
+        // After mermaid.render(), the SVG lives directly in the wrapper div
+        const parent = el.closest(".diagram-wrapper") || el.parentElement;
+        return parent ? parent.querySelector("svg") : el.querySelector("svg");
+      }
+
+      function dlSVG(renderId, filename) {
+        const wrapper =
+          document.querySelector(`#${renderId}`) ||
+          document.querySelector(`[id="${renderId}"]`);
+        // renderId is the mermaid render target — SVG lives inside its parent wrapper
+        const wrapperDiv = DIAGRAMS.find((d) => d.renderId === renderId);
+        if (!wrapperDiv) return;
+        const svg = document
+          .getElementById(wrapperDiv.wrapperId)
+          ?.querySelector("svg");
+        if (!svg) {
+          alert(
+            "Diagram belum selesai dirender. Tunggu sebentar lalu coba lagi.",
+          );
+          return;
+        }
+
+        const clone = svg.cloneNode(true);
+        ensureDimensions(clone, svg);
+        const str = new XMLSerializer().serializeToString(clone);
+        const blob = new Blob([str], { type: "image/svg+xml;charset=utf-8" });
+        triggerDownload(URL.createObjectURL(blob), filename + ".svg");
+      }
+
+      function dlPNG(renderId, filename) {
+        const wrapperDiv = DIAGRAMS.find((d) => d.renderId === renderId);
+        if (!wrapperDiv) return;
+        const svg = document
+          .getElementById(wrapperDiv.wrapperId)
+          ?.querySelector("svg");
+        if (!svg) {
+          alert(
+            "Diagram belum selesai dirender. Tunggu sebentar lalu coba lagi.",
+          );
+          return;
+        }
+
+        const clone = svg.cloneNode(true);
+        const { w, h } = ensureDimensions(clone, svg);
+
+        const scale = 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.ceil(w * scale);
+        canvas.height = Math.ceil(h * scale);
+        const ctx = canvas.getContext("2d");
+        ctx.scale(scale, scale);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, w, h);
+
+        const svgStr = new XMLSerializer().serializeToString(clone);
+        const blob = new Blob([svgStr], {
+          type: "image/svg+xml;charset=utf-8",
+        });
+        const url = URL.createObjectURL(blob);
+
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          canvas.toBlob((pngBlob) => {
+            triggerDownload(URL.createObjectURL(pngBlob), filename + ".png");
+          }, "image/png");
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          alert(
+            "Gagal mengkonversi ke PNG. Gunakan tombol SVG sebagai alternatif.",
+          );
+        };
+        img.src = url;
+      }
+
+      function ensureDimensions(clone, original) {
+        let w, h;
+        const vb = original.getAttribute("viewBox");
+        if (vb) {
+          const p = vb.trim().split(/[\s,]+/);
+          w = parseFloat(p[2]);
+          h = parseFloat(p[3]);
+        }
+        if (!w || !h) {
+          const r = original.getBoundingClientRect();
+          w = r.width || 900;
+          h = r.height || 600;
+        }
+        clone.setAttribute("width", w);
+        clone.setAttribute("height", h);
+        clone.style.maxWidth = "";
+        return { w, h };
+      }
+
+      function triggerDownload(url, filename) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      }
+    </script>
+  </body>
+</html>
